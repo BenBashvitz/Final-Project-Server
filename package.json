@@ -10,6 +10,9 @@
     "start": "tsc && node --env-file=.env.dev dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest --detectOpenHandles",
+    "test-user": "jest --detectOpenHandles src/tests/user.test.ts",
+    "test-auth": "jest --detectOpenHandles src/tests/auth.test.ts"
+
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

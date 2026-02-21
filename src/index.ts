@@ -2,6 +2,10 @@
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import swaggerUi from "swagger-ui-express";
+import userRouter from "./routes/userRoutes";
+import authRouter from "./routes/authRoutes";
+import swaggerSpec from "./swagger";
 
 dotenv.config({ path: ".env.dev" });
 
@@ -26,6 +30,10 @@ const initApp = async () => {
   db.once("open", () => {
     console.log("Connected to MongoDB");
   });
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/user", userRouter);
+  app.use("/auth", authRouter);
 
   return app;
 };
