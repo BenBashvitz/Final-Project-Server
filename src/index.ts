@@ -15,6 +15,7 @@ const initApp = async () => {
   const app = express();
   app.use(express.json());
   app.use(cors({
+    //TODO: in production, use actual domain instead of localhost
     origin: "http://localhost:5173",
     credentials: true
   }));

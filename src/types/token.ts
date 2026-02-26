@@ -1,3 +1,6 @@
-type TokenPayload = { userId: string; iat: number; exp: number };
+export type TokenPayload = { userId: string; iat: number; exp: number };
 
-export default TokenPayload;
+export type Tokens = {
+    authorization: string;
+    refresh_token: string;
+};

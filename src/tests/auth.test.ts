@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import request from "supertest";
 import initApp from "../index";
 import userModel from "../models/userModel";
-import Tokens from "../types/tokens";
+import {Tokens} from "../types/token";
 import {USERS} from "./consts";
-import {expectNoTokens, expectTokens, getTokensFromResponse, setupMultipleUsersForTests,} from "./utils";
+import {expectNoTokens, expectTokens, setupMultipleUsersForTests,} from "./utils";
 
 let app: Express;
 

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import {Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel";
-import Tokens from "../types/tokens";
+import {Tokens} from "../types/token";
 import {DEFAULT_JWT_EXPIRATION_TIME_SECONDS, DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS} from "../consts";
 import {AuthRequest, UserReq} from "../types/request";
 
