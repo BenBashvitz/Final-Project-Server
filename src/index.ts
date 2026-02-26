@@ -6,12 +6,19 @@ import swaggerUi from "swagger-ui-express";
 import userRouter from "./routes/userRoutes";
 import authRouter from "./routes/authRoutes";
 import swaggerSpec from "./swagger";
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 dotenv.config({ path: ".env.dev" });
 
 const initApp = async () => {
   const app = express();
   app.use(express.json());
+  app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+  }));
+  app.use(cookieParser())
 
   const dbUrl = process.env.MONGODB_URL;
 

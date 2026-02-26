@@ -1,6 +1,6 @@
 type Tokens = {
-  token: string;
-  refreshToken: string;
+  authorization: string;
+  refresh_token: string;
 };
 
 export default Tokens;
