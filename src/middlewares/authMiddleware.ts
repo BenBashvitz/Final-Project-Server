@@ -1,30 +1,31 @@
 import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
-import { AuthRequest, UserReq } from "../types/request";
+import { AuthRequest } from "../types/request";
+import {accessTokenCookieName, TokenPayload} from "../types/token";
 
 export const authMiddleware = (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies.authorization;
+  const accessToken = req.cookies[accessTokenCookieName];
   const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
-    throw new Error("JWT configuration error.");
+    return res.status(500).send("JWT configuration error.");
   }
 
-  if (!token) {
-    return res.status(401).json({ error: "Unauthorized" });
+  if (!accessToken) {
+    return res.status(401).json("Unauthorized");
   }
 
   try {
-    const payload = jwt.verify(token, jwtSecret) as UserReq;
+    const payload = jwt.verify(accessToken, jwtSecret) as TokenPayload;
 
     req.user = { _id: payload.userId };
 
     next();
   } catch {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json("Unauthorized");
   }
 };

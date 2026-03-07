@@ -104,13 +104,8 @@ router.post("/login", authController.login);
  *   post:
  *     summary: Refresh access token
  *     tags: [Auth]
- *     parameters:
- *     - in: header
- *       name: refresh-token
- *       required: true
- *       description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       schema:
- *         type: string
+ *     security:
+ *       - refreshAuth: []
  *     responses:
  *       200:
  *         description: Token refreshed successfully
@@ -141,22 +136,11 @@ router.post("/refresh-token", authController.refreshToken);
  *   post:
  *     summary: Logout a user
  *     tags: [Auth]
- *     parameters:
- *     - in: header
- *       name: authorization
- *       required: true
- *       description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       schema:
- *         type: string
  *     security:
- *       - bearerAuth: []
+ *       - accessAuth: []
  *     responses:
  *       200:
  *         description: Logged out successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
  *       500:
  *         description: Internal Server Error
  *         content:

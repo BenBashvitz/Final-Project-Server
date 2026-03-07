@@ -2,9 +2,11 @@ import bcrypt from "bcrypt";
 import {Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel";
-import {Tokens} from "../types/token";
+import {accessTokenCookieName, refreshTokenCookieName, TokenPayload, Tokens} from "../types/token";
 import {DEFAULT_JWT_EXPIRATION_TIME_SECONDS, DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS} from "../consts";
-import {AuthRequest, UserReq} from "../types/request";
+import {AuthRequest, ResponseErrorMessage} from "../types/request";
+import type {DefaultSchemaOptions, Document, ResolveSchemaOptions, Types} from 'mongoose';
+import type {RawUser, User} from "../types/user";
 
 const jwtExpirationTimeInSeconds = () => process.env.JWT_EXPIRATION_TIME_SECONDS ? +process.env.JWT_EXPIRATION_TIME_SECONDS : DEFAULT_JWT_EXPIRATION_TIME_SECONDS
 
@@ -15,15 +17,17 @@ const jwtExpirationTimeInMS = () => jwtExpirationTimeInSeconds() * 1000
 const refreshJwtExpirationTimeInMS = () => refreshJwtExpirationTimeInSeconds() * 1000
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
-    res.cookie('authorization', tokens.authorization, {
+    res.cookie(accessTokenCookieName, tokens.accessToken, {
         maxAge: invalidate ? 0 : jwtExpirationTimeInMS(),
         httpOnly: true,
-        sameSite: 'strict'
+        sameSite: 'strict',
+        secure: true
     })
-    res.cookie('refresh_token', tokens.refresh_token, {
+    res.cookie(refreshTokenCookieName, tokens.refreshToken, {
         maxAge: invalidate ? 0 : refreshJwtExpirationTimeInMS(),
         httpOnly: true,
-        sameSite: 'strict'
+        sameSite: 'strict',
+        secure: true,
     })
 }
 
@@ -34,7 +38,7 @@ const generateTokens = (userId: string): Tokens => {
         throw new Error("JWT configuration error.");
     }
 
-    const token = jwt.sign({userId}, jwtSecret, {
+    const accessToken = jwt.sign({userId}, jwtSecret, {
         expiresIn: jwtExpirationTimeInSeconds(),
     });
 
@@ -42,8 +46,29 @@ const generateTokens = (userId: string): Tokens => {
         expiresIn: refreshJwtExpirationTimeInSeconds(),
     });
 
-    return {authorization: token, refresh_token: refreshToken};
+    return {accessToken, refreshToken};
 };
+
+const saveTokensAndSendResponse = async (user: Document<unknown, {}, RawUser, {
+    id: string
+}, ResolveSchemaOptions<DefaultSchemaOptions>> & Omit<Omit<User, "_id"> & {
+    _id: Types.ObjectId
+} & Required<{
+    _id: Types.ObjectId
+}> & {
+    __v: number
+}, "id"> & {
+    id: string
+}, res: Response, status: number) => {
+    const tokens = generateTokens(user._id.toString());
+
+    user.refreshTokens.push(tokens.refreshToken);
+    await user.save();
+
+    setTokens(res, tokens);
+
+    return res.status(status).send();
+}
 
 const register = async (req: Request, res: Response) => {
     const {email, password, username} = req.body;
@@ -51,7 +76,7 @@ const register = async (req: Request, res: Response) => {
     if (!email || !password || !username) {
         return res
             .status(400)
-            .send("email, password and username are required.");
+            .send(ResponseErrorMessage.MISSING_REGISTER_CREDENTIALS);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -60,14 +85,7 @@ const register = async (req: Request, res: Response) => {
     try {
         const user = await userModel.create({email, password: hashedPassword, username});
 
-        const tokens = generateTokens(user._id.toString());
-
-        user.refreshTokens.push(tokens.refresh_token);
-        await user.save();
-
-        setTokens(res, tokens);
-
-        return res.status(201).send();
+        return saveTokensAndSendResponse(user, res, 201)
     } catch (error) {
         console.error("Register error: ", error);
 
@@ -76,35 +94,28 @@ const register = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-    const {email, password} = req.body;
+    const {username, password} = req.body;
 
-    if (!email || !password) {
+    if (!username || !password) {
         return res
             .status(400)
-            .send("email and password are required.");
+            .send(ResponseErrorMessage.MISSING_LOGIN_CREDENTIALS);
     }
 
     try {
-        const user = await userModel.findOne({email});
+        const user = await userModel.findOne({username});
 
         if (!user) {
-            return res.status(401).send("Invalid email or password.");
+            return res.status(401).send(ResponseErrorMessage.INVALID_LOGIN_CREDENTIALS);
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return res.status(401).send("Invalid email or password.");
+            return res.status(401).send(ResponseErrorMessage.INVALID_LOGIN_CREDENTIALS);
         }
 
-        const tokens = generateTokens(user._id.toString());
-
-        user.refreshTokens.push(tokens.refresh_token);
-        await user.save();
-
-        setTokens(res, tokens);
-
-        return res.status(200).send();
+        return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
         console.error("Login error: ", error);
 
@@ -113,47 +124,40 @@ const login = async (req: Request, res: Response) => {
 };
 
 const refreshToken = async (req: Request, res: Response) => {
-    const oldRefreshToken = req.cookies.refresh_token ?? '';
+    const oldRefreshToken = req.cookies[refreshTokenCookieName] ?? '';
     const jwtSecret = process.env.JWT_SECRET ?? "";
 
     if (!oldRefreshToken) {
-        return res.status(400).send("refreshToken is required.");
+        return res.status(400).send(ResponseErrorMessage.MISSING_REFRESH_TOKEN);
     }
 
     try {
         const decodedRefreshToken = jwt.verify(
             oldRefreshToken,
             jwtSecret
-        ) as UserReq;
+        ) as TokenPayload;
 
         const user = await userModel.findById(decodedRefreshToken.userId);
 
         if (!user) {
-            return res.status(401).send("Invalid refresh token.");
+            return res.status(401).send(ResponseErrorMessage.INVALID_REFRESH_TOKEN);
         }
 
         if (!user.refreshTokens.includes(oldRefreshToken)) {
             user.refreshTokens = [];
             await user.save();
 
-            return res.status(401).send("Invalid refresh token.");
+            return res.status(401).send(ResponseErrorMessage.INVALID_REFRESH_TOKEN);
         }
 
         user.refreshTokens = user.refreshTokens.filter(
             (refreshToken) => refreshToken !== oldRefreshToken
         );
 
-        const tokens = generateTokens(user._id.toString());
-
-        user.refreshTokens.push(tokens.refresh_token);
-        await user.save();
-
-        setTokens(res, tokens);
-
-        return res.status(200).send();
+        return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
         console.error("Refresh token error: ", error);
-        return res.status(401).send("Invalid refresh token");
+        return res.status(401).send(ResponseErrorMessage.INVALID_REFRESH_TOKEN);
     }
 };
 

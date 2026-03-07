@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
-import userRouter from "./routes/userRoutes";
 import authRouter from "./routes/authRoutes";
 import swaggerSpec from "./swagger";
 import cors from 'cors'
@@ -15,8 +14,7 @@ const initApp = async () => {
   const app = express();
   app.use(express.json());
   app.use(cors({
-    //TODO: in production, use actual domain instead of localhost
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true
   }));
   app.use(cookieParser())
@@ -40,7 +38,6 @@ const initApp = async () => {
   });
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  app.use("/user", userRouter);
   app.use("/auth", authRouter);
 
   return app;

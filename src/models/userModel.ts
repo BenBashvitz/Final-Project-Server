@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema<RawUser>({
   },
   refreshTokens: {
     type: [String],
+    required: true,
   },
 });
 

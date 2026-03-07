@@ -1,7 +1,7 @@
 import {Express} from "express";
 import request from "supertest";
 import userModel from "../models/userModel";
-import {Tokens} from "../types/token";
+import {accessTokenCookieName, refreshTokenCookieName, Tokens} from "../types/token";
 import {USERS} from "./consts";
 import {TokenPayload} from "../types/token";
 import jwt from "jsonwebtoken";
@@ -12,7 +12,7 @@ export const setupMultipleUsersForTests = async (app: Express) => {
     await userModel.deleteMany();
 
     const userTokens: Tokens[] = await Promise.all(USERS.map(user => getUserToken(app, user)));
-    const userIds: string[] = userTokens.map(tokens => (jwt.decode(tokens.authorization) as TokenPayload).userId);
+    const userIds: string[] = userTokens.map(tokens => (jwt.decode(tokens.accessToken) as TokenPayload).userId);
 
     return {userTokens, userIds};
 };
@@ -35,15 +35,13 @@ export const getTokensFromResponse = (response: Response) => {
 }
 
 export const expectTokens = (response: Response) => {
-    const cookies = getTokensFromResponse(response);
-
-    expect(cookies.authorization).toBeTruthy();
-    expect(cookies.refresh_token).toBeTruthy();
+    expect(response.headers["set-cookie"][0]).toContain(`${accessTokenCookieName}=`);
+    expect(response.headers["set-cookie"][1]).toContain(`${refreshTokenCookieName}=`);
+    expect(response.headers["set-cookie"][0]).not.toContain(`${accessTokenCookieName}=undefined`);
+    expect(response.headers["set-cookie"][1]).not.toContain(`${refreshTokenCookieName}=undefined`);
 }
 
 export const expectNoTokens= (response: Response) => {
-    const cookies = getTokensFromResponse(response);
-
-    expect(cookies.authorization).toBe('undefined');
-    expect(cookies.refresh_token).toBe('undefined');
+    expect(response.headers["set-cookie"][0]).toContain(`${accessTokenCookieName}=undefined`);
+    expect(response.headers["set-cookie"][1]).toContain(`${refreshTokenCookieName}=undefined`);
 }

@@ -1,6 +1,10 @@
 export type TokenPayload = { userId: string; iat: number; exp: number };
 
+export const accessTokenCookieName = 'accessToken' as const;
+export const refreshTokenCookieName = 'refreshToken' as const;
+
 export type Tokens = {
-    authorization: string;
-    refresh_token: string;
+    [accessTokenCookieName]: string;
+    [refreshTokenCookieName]: string;
 };
+
