@@ -2,12 +2,20 @@
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import postRouter from "./routes/postRoutes";
+import authRouter from "./routes/authRoutes";
+import cors from "cors";
 
 dotenv.config({ path: ".env.dev" });
 
 const initApp = async () => {
   const app = express();
   app.use(express.json());
+  app.use(
+    cors({
+      origin: ["http://localhost:5173"],
+    }),
+  );
 
   const dbUrl = process.env.MONGODB_URL;
 
@@ -26,6 +34,9 @@ const initApp = async () => {
   db.once("open", () => {
     console.log("Connected to MongoDB");
   });
+
+  app.use("/post", postRouter);
+  app.use("/auth", authRouter);
 
   return app;
 };
