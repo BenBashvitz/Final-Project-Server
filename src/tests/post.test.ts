@@ -4,7 +4,7 @@ import request from "supertest";
 import initApp from "../index";
 import postModel from "../models/postModel";
 import userModel from "../models/userModel";
-import { Post } from "../types/post";
+import { RawPost } from "../types/post";
 import { Tokens, TokenPayload } from "../types/token";
 import { POSTS, USERS } from "./consts";
 import { getUserToken } from "./utils";
@@ -25,7 +25,7 @@ beforeAll(async () => {
 });
 
 describe("with post creation", () => {
-  let post: Post;
+  let post: RawPost;
 
   beforeEach(async () => {
     await postModel.deleteMany();

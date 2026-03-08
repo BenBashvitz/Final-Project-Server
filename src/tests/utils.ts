@@ -6,7 +6,7 @@ import { Tokens, TokenPayload } from "../types/token";
 import { USERS } from "./consts";
 import jwt from "jsonwebtoken";
 import { UserInput } from "../types/user";
-import { Post, PostInput } from "../types/post";
+import { RawPost, PostInput } from "../types/post";
 
 export const cleanupBeforeCommentTests = async (
   model: Model<Comment>,
@@ -24,7 +24,7 @@ export const cleanupBeforeCommentTests = async (
 };
 
 export const cleanupBeforePostTests = async (
-  model: Model<Post>,
+  model: Model<RawPost>,
   data: PostInput[],
   userIds: string[],
 ) => {

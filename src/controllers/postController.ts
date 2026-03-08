@@ -1,10 +1,10 @@
 // import { Response } from "express";
 import postModel from "../models/postModel";
-import { Post } from "../types/post";
+import { RawPost } from "../types/post";
 // import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
 
-class PostController extends BaseController<Post> {
+class PostController extends BaseController<RawPost> {
   constructor() {
     super(postModel);
   }

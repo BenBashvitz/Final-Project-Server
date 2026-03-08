@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { Post } from "../types/post";
+import { RawPost } from "../types/post";
 
-const postSchema = new mongoose.Schema<Post>({
+const postSchema = new mongoose.Schema<RawPost>({
   description: {
     type: String,
     required: true,
@@ -9,6 +9,14 @@ const postSchema = new mongoose.Schema<Post>({
   imgUrl: {
     type: String,
     required: true,
+  },
+  likeCount: {
+    type: Number,
+    default: 0,
+  },
+  commentCount: {
+    type: Number,
+    default: 0,
   },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
