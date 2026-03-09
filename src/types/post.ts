@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { PostSender } from "./user";
 
 export type Cursor = {
   _id: RawPost["_id"];
@@ -17,17 +18,16 @@ export type RawPost = {
   creationDate: Date;
 };
 
-// export type Post = Omit<RawPost, "_id" | "sender" | "creationDate"> & {
-//   id: string;
-//   sender: string;
-//   creationDate: string;
-// };
-
 export type PostFilters = {
   cursor: string;
 };
 
+export type Post = Omit<RawPost, "sender"> & {
+  sender: PostSender;
+  isLikedByCurrentUser: boolean;
+};
+
 export type PostPage = {
-  posts: RawPost[];
+  posts: Post[];
   nextCursor: Cursor;
 };

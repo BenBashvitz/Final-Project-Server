@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema<RawUser>({
     type: String,
     required: true,
   },
+  imgUrl: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,

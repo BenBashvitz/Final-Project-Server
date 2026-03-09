@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import postModel from "../models/postModel";
-import { Cursor, PostFilters, PostPage, RawPost } from "../types/post";
-import BaseController from "./baseController";
+import mongoose from "mongoose";
 import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
+import postModel from "../models/postModel";
+import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
+import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -12,24 +13,67 @@ class PostController extends BaseController<RawPost> {
   override async getAll(req: Request, res: Response) {
     const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
     const { cursor } = req.query as PostFilters;
-
+    const currentUserId = new mongoose.Types.ObjectId(
+      "69ac63d7aa7e528360e63264",
+    );
     const parsedCursor = cursor ? JSON.parse(cursor) : null;
 
     try {
-      const posts = await this.model
-        .find({
-          ...(parsedCursor && {
-            $or: [
-              { creationDate: { $lt: parsedCursor.creationDate } },
+      const posts = await this.model.aggregate<Post>([
+        {
+          $match: {
+            ...(parsedCursor && {
+              $or: [
+                { creationDate: { $lt: new Date(parsedCursor.creationDate) } },
+                {
+                  creationDate: new Date(parsedCursor.creationDate),
+                  _id: { $lte: new mongoose.Types.ObjectId(parsedCursor._id) },
+                },
+              ],
+            }),
+          },
+        },
+        { $sort: { creationDate: -1, _id: -1 } },
+        { $limit: pageSize + 1 },
+        {
+          $lookup: {
+            from: "users",
+            localField: "sender",
+            foreignField: "_id",
+            as: "sender",
+            pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
+          },
+        },
+        { $unwind: "$sender" },
+        {
+          $lookup: {
+            from: "likes",
+            let: { postId: "$_id" },
+            pipeline: [
               {
-                creationDate: parsedCursor.creationDate,
-                _id: { $lte: parsedCursor._id },
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$postId", "$$postId"] },
+                      { $eq: ["$userId", currentUserId] },
+                    ],
+                  },
+                },
               },
+              { $limit: 1 },
             ],
-          }),
-        })
-        .sort({ creationDate: -1, _id: -1 })
-        .limit(pageSize + 1);
+            as: "_likedByCurrentUser",
+          },
+        },
+        {
+          $addFields: {
+            isLikedByCurrentUser: {
+              $gt: [{ $size: "$_likedByCurrentUser" }, 0],
+            },
+          },
+        },
+        { $unset: "_likedByCurrentUser" },
+      ]);
 
       const nextCursor: Cursor = {
         _id: posts[pageSize]?._id ?? null,
