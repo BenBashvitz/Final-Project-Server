@@ -1,5 +1,10 @@
 import { Types } from "mongoose";
 
+export type Cursor = {
+  _id: RawPost["_id"];
+  creationDate: RawPost["creationDate"];
+};
+
 export type PostInput = Pick<RawPost, "description" | "imgUrl">;
 
 export type RawPost = {
@@ -9,9 +14,20 @@ export type RawPost = {
   sender: Types.ObjectId;
   likeCount: number;
   commentCount: number;
+  creationDate: Date;
 };
 
-export type Post = Omit<RawPost, "_id" | "sender"> & {
-  id: string;
-  sender: string;
+// export type Post = Omit<RawPost, "_id" | "sender" | "creationDate"> & {
+//   id: string;
+//   sender: string;
+//   creationDate: string;
+// };
+
+export type PostFilters = {
+  cursor: string;
+};
+
+export type PostPage = {
+  posts: RawPost[];
+  nextCursor: Cursor;
 };

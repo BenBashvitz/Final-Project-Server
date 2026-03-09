@@ -1,33 +1,61 @@
-// import { Response } from "express";
+import { Request, Response } from "express";
 import postModel from "../models/postModel";
-import { RawPost } from "../types/post";
-// import { AuthRequest } from "../types/request";
+import { Cursor, PostFilters, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
+import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
     super(postModel);
   }
 
-  // override async post(req: AuthRequest, res: Response) {
-  //   const userId = req.user?._id;
+  override async getAll(req: Request, res: Response) {
+    const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
+    const { cursor } = req.query as PostFilters;
 
-  //   req.body.sender = userId;
+    const parsedCursor = cursor ? JSON.parse(cursor) : null;
 
-  //   return super.post(req, res);
-  // }
+    try {
+      const posts = await this.model
+        .find({
+          ...(parsedCursor && {
+            $or: [
+              { creationDate: { $lt: parsedCursor.creationDate } },
+              {
+                creationDate: parsedCursor.creationDate,
+                _id: { $lte: parsedCursor._id },
+              },
+            ],
+          }),
+        })
+        .sort({ creationDate: -1, _id: -1 })
+        .limit(pageSize + 1);
 
-  // override async put(req: AuthRequest, res: Response) {
-  //   const userId = req.user?._id;
+      const nextCursor: Cursor = {
+        _id: posts[pageSize]?._id ?? null,
+        creationDate: posts[pageSize]?.creationDate ?? null,
+      };
 
-  //   const post = await postModel.findById(req.params.id);
+      if (posts.length > pageSize) {
+        posts.pop();
+      }
 
-  //   if (post && post.sender.toString() !== userId) {
-  //     return res.status(403).send("You are not authorized to update this post");
-  //   }
+      const postPage: PostPage = {
+        posts,
+        nextCursor,
+      };
 
-  //   return super.put(req, res);
-  // }
+      res.send(postPage);
+    } catch (error) {
+      console.error(
+        `An error occurred while getting the post page ${cursor}: `,
+        error,
+      );
+      res
+        .status(500)
+        .send("An error occurred while getting the current post page");
+    }
+  }
 }
 
 export default new PostController();

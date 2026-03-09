@@ -10,6 +10,10 @@ const postSchema = new mongoose.Schema<RawPost>({
     type: String,
     required: true,
   },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
   likeCount: {
     type: Number,
     default: 0,
@@ -24,5 +28,7 @@ const postSchema = new mongoose.Schema<RawPost>({
     required: true,
   },
 });
+
+postSchema.index({ creationDate: -1, _id: -1 });
 
 export default mongoose.model("Post", postSchema);
