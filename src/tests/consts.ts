@@ -1,16 +1,4 @@
-import { PostInput } from "../types/post";
 import { UserInput } from "../types/user";
-
-export const POSTS: PostInput[] = [
-  {
-    description: "Test Description",
-    imgUrl: "https://example.com/image.jpg",
-  },
-  {
-    description: "Another Description",
-    imgUrl: "https://example.com/image2.jpg",
-  },
-];
 
 export const USERS: UserInput[] = [
   {
@@ -26,3 +14,5 @@ export const USERS: UserInput[] = [
     refreshTokens: [],
   },
 ];
+
+export const POST_PAGE_SIZE = Number(process.env.POSTS_PAGE_SIZE);

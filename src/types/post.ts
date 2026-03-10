@@ -2,15 +2,13 @@ import { Types } from "mongoose";
 import { PostSender } from "./user";
 
 export type Cursor = {
-  _id: RawPost["_id"];
-  creationDate: RawPost["creationDate"];
+  _id: RawPost["_id"] | null;
+  creationDate: RawPost["creationDate"] | null;
 };
-
-export type PostInput = Pick<RawPost, "description" | "imgUrl">;
 
 export type RawPost = {
   _id: Types.ObjectId;
-  imgUrl: string;
+  imgUrl?: string;
   description: string;
   sender: Types.ObjectId;
   likeCount: number;

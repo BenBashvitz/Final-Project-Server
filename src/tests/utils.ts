@@ -6,7 +6,8 @@ import { Tokens, TokenPayload } from "../types/token";
 import { USERS } from "./consts";
 import jwt from "jsonwebtoken";
 import { UserInput } from "../types/user";
-import { RawPost, PostInput } from "../types/post";
+import type { RawPost } from "../types/post";
+import type { PostInput, PostInputWithSender } from "./posts/types";
 
 export const cleanupBeforeCommentTests = async (
   model: Model<Comment>,
@@ -30,7 +31,7 @@ export const cleanupBeforePostTests = async (
 ) => {
   await model.deleteMany();
 
-  const postsWithSender = data.map((post, index) => ({
+  const postsWithSender: PostInputWithSender[] = data.map((post, index) => ({
     ...post,
     sender: userIds[index],
   }));
