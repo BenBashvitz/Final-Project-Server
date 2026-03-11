@@ -39,6 +39,7 @@ const initApp = async () => {
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);
+  app.use("/uploads", express.static("public/uploads"));
 
   return app;
 };
