@@ -40,13 +40,13 @@ class PostController extends BaseController<RawPost> {
         {
           $lookup: {
             from: "users",
-            localField: "sender",
+            localField: "userId",
             foreignField: "_id",
-            as: "sender",
+            as: "user",
             pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
           },
         },
-        { $unwind: "$sender" },
+        { $unwind: "$user" },
         {
           $lookup: {
             from: "likes",
@@ -94,12 +94,14 @@ class PostController extends BaseController<RawPost> {
       res.send(postPage);
     } catch (error) {
       console.error(
-        `An error occurred while getting the post page ${cursor}: `,
+        `An error occurred while getting the post page with the cursor ${cursor}: `,
         error,
       );
       res
         .status(500)
-        .send("An error occurred while getting the current post page");
+        .send(
+          `An error occurred while getting the current post page with the provided cursor: ${cursor}`,
+        );
     }
   }
 }

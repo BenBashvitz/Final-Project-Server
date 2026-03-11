@@ -7,18 +7,18 @@ import { USERS } from "./consts";
 import jwt from "jsonwebtoken";
 import { UserInput } from "../types/user";
 import type { RawPost } from "../types/post";
-import type { PostInput, PostInputWithSender } from "./posts/types";
+import type { PostInput, PostInputWithUserId } from "./posts/types";
 
 export const cleanupBeforeCommentTests = async (
   model: Model<Comment>,
-  data: Omit<Comment, "sender" | "postId">[],
+  data: Omit<Comment, "userId" | "postId">[],
   userIds: string[],
   postIds: string[],
 ) => {
   await model.deleteMany();
   const commentsWithUserAndPost = data.map((comment, index) => ({
     ...comment,
-    sender: userIds[index],
+    userId: userIds[index],
     postId: postIds[index],
   }));
   return model.create(commentsWithUserAndPost);
@@ -31,12 +31,12 @@ export const cleanupBeforePostTests = async (
 ) => {
   await model.deleteMany();
 
-  const postsWithSender: PostInputWithSender[] = data.map((post, index) => ({
+  const postsWithUserId: PostInputWithUserId[] = data.map((post, index) => ({
     ...post,
-    sender: userIds[index],
+    userId: userIds[index],
   }));
 
-  return model.create(postsWithSender);
+  return model.create(postsWithUserId);
 };
 
 export const setupMultipleUsersForTests = async (app: Express) => {

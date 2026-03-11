@@ -4,8 +4,8 @@ export type PostInput = Pick<RawPost, "description" | "imgUrl"> & {
   creationDate: string;
 };
 
-export type PostInputWithSender = PostInput & {
-  sender: string;
+export type PostInputWithUserId = PostInput & {
+  userId: string;
 };
 type TestCursor = {
   _id?: string | null;

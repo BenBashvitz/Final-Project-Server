@@ -29,7 +29,7 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         Post: {
           type: "object",
-          required: ["title", "description", "imgUrl", "sender"],
+          required: ["title", "description", "imgUrl", "userId"],
           properties: {
             _id: {
               type: "string",
@@ -51,7 +51,7 @@ const options: swaggerJsdoc.Options = {
               description: "The post description",
               example: "This is the description of my new post.",
             },
-            sender: {
+            userId: {
               type: "string",
               description: "ID of the user who created the post",
               example: "697a78c9437f1b91bae9a42d",

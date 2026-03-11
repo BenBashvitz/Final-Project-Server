@@ -8,7 +8,7 @@ import userModel from "../../models/userModel";
 import { TokenPayload, Tokens } from "../../types/token";
 import { POST_PAGE_SIZE, USERS } from "../consts";
 import { getUserToken } from "../utils";
-import type { PostInputWithSender, TestPostPage } from "./types";
+import type { PostInputWithUserId, TestPostPage } from "./types";
 import { POSTS } from "./consts";
 
 let app: Express;
@@ -29,9 +29,9 @@ describe("with post creation", () => {
   beforeEach(async () => {
     await postModel.deleteMany();
 
-    const postToInsert: PostInputWithSender[] = POSTS.map((post) => ({
+    const postToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
       ...post,
-      sender: userId,
+      userId,
     }));
 
     await postModel.create(postToInsert);
