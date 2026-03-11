@@ -4,6 +4,7 @@ import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
 import postModel from "../models/postModel";
 import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
+import { AuthRequest } from "../types/request";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -103,6 +104,14 @@ class PostController extends BaseController<RawPost> {
           `An error occurred while getting the current post page with the provided cursor: ${cursor}`,
         );
     }
+  }
+
+  override async post(req: AuthRequest, res: Response) {
+    const userId = req.user?._id;
+
+    req.body.userId = userId;
+
+    return super.post(req, res);
   }
 }
 
