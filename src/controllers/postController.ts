@@ -40,13 +40,13 @@ class PostController extends BaseController<RawPost> {
         {
           $lookup: {
             from: "users",
-            localField: "sender",
+            localField: "userId",
             foreignField: "_id",
-            as: "sender",
+            as: "user",
             pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
           },
         },
-        { $unwind: "$sender" },
+        { $unwind: "$user" },
         {
           $lookup: {
             from: "likes",
