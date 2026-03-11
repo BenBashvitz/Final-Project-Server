@@ -6,3 +6,4 @@ export type UserReq = {
 };
 
 export type AuthRequest = Request & { user?: Pick<User, "_id"> };
+export type FileRequest = Request & { file?: Express.Multer.File };

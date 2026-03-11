@@ -76,6 +76,6 @@ router.get("/", postController.getAll.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/", authMiddleware, postController.post.bind(postController));
+router.post("/", postController.post.bind(postController));
 
 export default router;

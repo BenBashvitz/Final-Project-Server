@@ -1,10 +1,11 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import postRouter from "./routes/postRoutes";
 import authRouter from "./routes/authRoutes";
-import cors from "cors";
+import multerRouter from "./routes/multerRoutes";
+import postRouter from "./routes/postRoutes";
 
 dotenv.config({ path: ".env.dev" });
 
@@ -37,6 +38,7 @@ const initApp = async () => {
 
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
+  app.use("/upload", multerRouter);
 
   return app;
 };

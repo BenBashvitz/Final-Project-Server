@@ -8,11 +8,10 @@ const postSchema = new mongoose.Schema<RawPost>({
   },
   imgUrl: {
     type: String,
-    required: true,
   },
   creationDate: {
     type: Date,
-    default: Date.now,
+    required: true,
   },
   likeCount: {
     type: Number,

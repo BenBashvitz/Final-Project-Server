@@ -11,6 +11,49 @@ class PostController extends BaseController<RawPost> {
     super(postModel);
   }
 
+  private getEnrichmentPipeline(currentUserId: mongoose.Types.ObjectId) {
+    return [
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $lookup: {
+          from: "likes",
+          let: { postId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$postId", "$$postId"] },
+                    { $eq: ["$userId", currentUserId] },
+                  ],
+                },
+              },
+            },
+            { $limit: 1 },
+          ],
+          as: "_likedByCurrentUser",
+        },
+      },
+      {
+        $addFields: {
+          isLikedByCurrentUser: {
+            $gt: [{ $size: "$_likedByCurrentUser" }, 0],
+          },
+        },
+      },
+      { $unset: "_likedByCurrentUser" },
+    ];
+  }
+
   override async getAll(req: Request, res: Response) {
     const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
 
@@ -38,44 +81,7 @@ class PostController extends BaseController<RawPost> {
         },
         { $sort: { creationDate: -1, _id: -1 } },
         { $limit: pageSize + 1 },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "user",
-            pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
-          },
-        },
-        { $unwind: "$user" },
-        {
-          $lookup: {
-            from: "likes",
-            let: { postId: "$_id" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ["$postId", "$$postId"] },
-                      { $eq: ["$userId", currentUserId] },
-                    ],
-                  },
-                },
-              },
-              { $limit: 1 },
-            ],
-            as: "_likedByCurrentUser",
-          },
-        },
-        {
-          $addFields: {
-            isLikedByCurrentUser: {
-              $gt: [{ $size: "$_likedByCurrentUser" }, 0],
-            },
-          },
-        },
-        { $unset: "_likedByCurrentUser" },
+        ...this.getEnrichmentPipeline(currentUserId),
       ]);
 
       const nextCursor: Cursor = {
@@ -107,11 +113,33 @@ class PostController extends BaseController<RawPost> {
   }
 
   override async post(req: AuthRequest, res: Response) {
-    const userId = req.user?._id;
+    // const userId = req.user?._id;
+    const userId = "69ac63d7aa7e528360e63264";
 
     req.body.userId = userId;
 
-    return super.post(req, res);
+    const currentUserId = new mongoose.Types.ObjectId(userId);
+
+    try {
+      const inserted = await this.model.create(req.body);
+
+      const [enrichedPost] = await this.model.aggregate<Post>([
+        { $match: { _id: inserted._id } },
+        ...this.getEnrichmentPipeline(currentUserId),
+      ]);
+
+      res.status(201).json(enrichedPost);
+    } catch (error) {
+      console.error(
+        `An error occurred while creating the following post ${req.body}: `,
+        error,
+      );
+      res
+        .status(500)
+        .send(
+          `An error occurred while creating the following post: ${req.body}`,
+        );
+    }
   }
 }
 
