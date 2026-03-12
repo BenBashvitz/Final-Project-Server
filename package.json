@@ -9,8 +9,8 @@
   "scripts": {
     "start": "tsc && node --env-file=.env.dev dist/server.js",
     "dev": "nodemon src/server.ts",
-    "test": "jest --detectOpenHandles -–runInBand",
-    "test-post": "jest --detectOpenHandles -–runInBand src/tests/post.test.ts"
+    "test": "jest --detectOpenHandles --runInBand",
+    "test-post": "jest --detectOpenHandles --runInBand src/tests/posts/post.test.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
