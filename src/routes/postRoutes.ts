@@ -8,15 +8,27 @@ const router = express.Router();
  *   get:
  *     summary: Get all posts
  *     tags: [Posts]
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         description: Cursor for paginating through posts. Omit for the first page.
  *     responses:
  *       200:
- *         description: List of all posts
+ *         description: Paginated list of posts
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 nextCursor:
+ *                   type: string
+ *                   description: Cursor to fetch the next page of results, or null if there are no more posts.
  *       500:
  *         description: Internal server error
  *         content:
