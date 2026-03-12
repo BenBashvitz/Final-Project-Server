@@ -1,6 +1,7 @@
 import express, { Response } from "express";
 import multer from "multer";
 import { FileRequest } from "../types/request";
+import fs from "fs/promises";
 
 const router = express.Router();
 
@@ -16,20 +17,45 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post(
+router.post("/", upload.single("file"), (req: FileRequest, res: Response) => {
+  const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
+
+  console.log("req.file.path:", req.file?.path);
+
+  const parts = req.file?.path.split("\\") ?? [];
+  const imgUrl = base + "uploads/" + parts[parts.length - 1];
+
+  console.log("router.post(/file: " + imgUrl);
+  res.status(200).send({ imgUrl });
+});
+
+router.put(
   "/",
   upload.single("file"),
-  function (req: FileRequest, res: Response) {
-    const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
+  async (req: FileRequest, res: Response) => {
+    try {
+      const oldImgUrlParts = req.body.oldImgUrl.split("/");
 
-    console.log("req.file.path:", req.file?.path);
+      const oldImgName = oldImgUrlParts[oldImgUrlParts.length - 1];
 
-    const parts = req.file?.path.split("\\") ?? [];
-    const imgUrl = base + "uploads/" + parts[parts.length - 1];
+      const oldImgPath = "public/uploads/" + oldImgName;
 
-    console.log("router.post(/file: " + imgUrl);
-    res.status(200).send({ imgUrl });
+      await fs.unlink(oldImgPath);
+
+      const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
+
+      console.log("req.file.path:", req.file?.path);
+
+      const parts = req.file?.path.split("\\") ?? [];
+      const imgUrl = base + "uploads/" + parts[parts.length - 1];
+
+      console.log("router.post(/file: " + imgUrl);
+      res.status(200).send({ imgUrl });
+    } catch (error) {
+      console.error("An error occurred while updating the image: ", error);
+      res.status(500).send("An error occurred while updating the image");
+    }
   },
 );
 
-export = router;
+export default router;
