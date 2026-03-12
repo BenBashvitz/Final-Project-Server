@@ -16,13 +16,13 @@ class BaseController<T> {
       res.status(201).json(insertedData);
     } catch (error) {
       console.error(
-        `An error occurred while creating the following data ${req.body}: `,
+        "An error occurred while creating data: ",
         error,
       );
       res
         .status(500)
         .send(
-          `An error occurred while creating the following data: ${req.body}`,
+          "An internal error occurred while creating the data.",
         );
     }
   }
