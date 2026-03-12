@@ -20,12 +20,12 @@ const options: swaggerJsdoc.Options = {
     ],
     components: {
       securitySchemes: {
-        accessAuth: {
+        accessToken: {
           type: "apiKey",
           in: "cookie",
           name: "accessToken",
         },
-        refreshAuth: {
+        refreshToken: {
           type: "apiKey",
           in: "cookie",
           name: "refreshToken",

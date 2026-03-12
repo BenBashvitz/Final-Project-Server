@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 import request from "supertest";
 import initApp from "../index";
 import userModel from "../models/userModel";
-import {accessTokenCookieName, refreshTokenCookieName, Tokens} from "../types/token";
+import type {Tokens} from "../types/token";
 import {USERS} from "./consts";
 import {expectNoTokens, expectTokens, getTokensFromResponse, setupMultipleUsersForTests} from "./utils";
+import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 
 let app: Express;
 
@@ -25,7 +26,10 @@ describe("user registration", () => {
 
 describe("user login", () => {
     test("should login user", async () => {
-        const response = await request(app).post("/auth/login").send(USERS[0]);
+        const response = await request(app).post("/auth/login").send({
+            username: USERS[0].username,
+            password: USERS[0].password,
+        });
 
         expect(response.statusCode).toBe(200);
         expectTokens(response);

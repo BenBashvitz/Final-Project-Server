@@ -1,7 +1,6 @@
-export type TokenPayload = { userId: string; iat: number; exp: number };
+import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 
-export const accessTokenCookieName = 'accessToken' as const;
-export const refreshTokenCookieName = 'refreshToken' as const;
+export type TokenPayload = { userId: string; iat: number; exp: number };
 
 export type Tokens = {
     [accessTokenCookieName]: string;

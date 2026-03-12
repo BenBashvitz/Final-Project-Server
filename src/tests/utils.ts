@@ -1,14 +1,15 @@
 import {Express} from "express";
 import request from "supertest";
 import userModel from "../models/userModel";
-import {accessTokenCookieName, refreshTokenCookieName, Tokens} from "../types/token";
+import type {Tokens} from "../types/token";
 import {USERS} from "./consts";
-import {TokenPayload} from "../types/token";
+import type {TokenPayload} from "../types/token";
 import jwt from "jsonwebtoken";
-import {UserInput} from "../types/user";
+import type {UserInput} from "../types/user";
 import {Response} from 'supertest';
+import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 
-export const setupMultipleUsersForTests = async (app: Express) => {
+export const setupMultipleUsersForTests = async (app: Express): Promise<{userTokens: Tokens[], userIds: string[]}> => {
     await userModel.deleteMany();
 
     const userTokens: Tokens[] = await Promise.all(USERS.map(user => getUserToken(app, user)));

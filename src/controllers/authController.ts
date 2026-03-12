@@ -2,15 +2,12 @@ import bcrypt from "bcrypt";
 import {Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel";
-import {accessTokenCookieName, refreshTokenCookieName, TokenPayload, Tokens} from "../types/token";
-import {DEFAULT_JWT_EXPIRATION_TIME_SECONDS, DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS} from "../consts";
+import type {TokenPayload, Tokens} from "../types/token";
+import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
 import type {DefaultSchemaOptions, Document, ResolveSchemaOptions, Types} from 'mongoose';
 import type {RawUser, User} from "../types/user";
-
-const jwtExpirationTimeInSeconds = () => process.env.JWT_EXPIRATION_TIME_SECONDS ? +process.env.JWT_EXPIRATION_TIME_SECONDS : DEFAULT_JWT_EXPIRATION_TIME_SECONDS
-
-const refreshJwtExpirationTimeInSeconds = () => process.env.REFRESH_JWT_EXPIRATION_TIME_SECONDS ? +process.env.REFRESH_JWT_EXPIRATION_TIME_SECONDS : DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS
+import {jwtExpirationTimeInSeconds, refreshJwtExpirationTimeInSeconds} from "../utils";
 
 const jwtExpirationTimeInMS = () => jwtExpirationTimeInSeconds() * 1000
 

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { RawUser } from "../types/user";
+import type { RawUser } from "../types/user";
 
 const userSchema = new mongoose.Schema<RawUser>({
   email: {

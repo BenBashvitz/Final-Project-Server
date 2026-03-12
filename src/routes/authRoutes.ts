@@ -65,9 +65,6 @@ router.post("/register", authController.register);
  *               - username
  *               - password
  *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
  *               username:
  *                 type: string
  *                 example: newUser
@@ -105,7 +102,7 @@ router.post("/login", authController.login);
  *     summary: Refresh access token
  *     tags: [Auth]
  *     security:
- *       - refreshAuth: []
+ *       - refreshToken: []
  *     responses:
  *       200:
  *         description: Token refreshed successfully
@@ -137,7 +134,7 @@ router.post("/refresh-token", authController.refreshToken);
  *     summary: Logout a user
  *     tags: [Auth]
  *     security:
- *       - accessAuth: []
+ *       - accessToken: []
  *     responses:
  *       200:
  *         description: Logged out successfully

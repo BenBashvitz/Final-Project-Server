@@ -1,4 +1,4 @@
-import {UserInput} from "../types/user";
+import type {UserInput} from "../types/user";
 
 export const USERS: UserInput[] = [
   {

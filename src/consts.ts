@@ -1,2 +1,4 @@
 export const DEFAULT_JWT_EXPIRATION_TIME_SECONDS = 3600;
 export const DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS = 86400;
+export const refreshTokenCookieName = 'refreshToken' as const;
+export const accessTokenCookieName = 'accessToken' as const;

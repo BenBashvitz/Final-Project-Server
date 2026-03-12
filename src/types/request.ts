@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { User } from "./user";
+import type { User } from "./user";
 
 export type AuthRequest = Request & { user?: Pick<User, "_id"> };
 
