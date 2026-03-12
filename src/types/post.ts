@@ -17,7 +17,7 @@ export type RawPost = {
 };
 
 export type PostFilters = {
-  cursor: string;
+  cursor?: string;
 };
 
 export type Post = Omit<RawPost, "sender"> & {

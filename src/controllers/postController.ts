@@ -94,7 +94,7 @@ class PostController extends BaseController<RawPost> {
       res.send(postPage);
     } catch (error) {
       console.error(
-        `An error occurred while getting the post page ${cursor}: `,
+        `An error occurred while getting the current post page: `,
         error,
       );
       res
