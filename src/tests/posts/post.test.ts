@@ -58,9 +58,11 @@ describe("with post creation", () => {
         cursor: null,
       };
 
-      const secondPostPageResponse = await request(app).get(
-        `/post?cursor=${JSON.stringify(responseBody.cursor)}`,
-      );
+      const secondPostPageResponse = await request(app)
+        .get(`/post`)
+        .query({
+          cursor: JSON.stringify(responseBody.cursor),
+        });
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
       expect(secondPostPageResponse.body.posts.length).toBe(POST_PAGE_SIZE);

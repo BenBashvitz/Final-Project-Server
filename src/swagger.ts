@@ -33,6 +33,7 @@ const options: swaggerJsdoc.Options = {
           required: [
             "description",
             "user",
+            "imgUrl",
             "likeCount",
             "commentCount",
             "creationDate",
