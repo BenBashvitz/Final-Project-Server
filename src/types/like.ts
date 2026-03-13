@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 
 export type Like = {
-  _id: string;
+  _id: Types.ObjectId;
   postId: Types.ObjectId;
   userId: Types.ObjectId;
 };

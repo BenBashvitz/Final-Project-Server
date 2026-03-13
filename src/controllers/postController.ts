@@ -79,7 +79,7 @@ class PostController extends BaseController<RawPost> {
 
       const hasNextPage = posts.length > pageSize;
 
-      const nextCursor: Cursor = hasNextPage
+      const cursor: Cursor = hasNextPage
         ? {
             _id: posts[pageSize - 1]?._id ?? null,
             creationDate: posts[pageSize - 1]?.creationDate ?? null,
@@ -92,7 +92,7 @@ class PostController extends BaseController<RawPost> {
 
       const postPage: PostPage = {
         posts,
-        nextCursor,
+        cursor,
       };
 
       res.send(postPage);

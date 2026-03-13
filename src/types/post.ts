@@ -8,7 +8,7 @@ export type Cursor = {
 
 export type RawPost = {
   _id: Types.ObjectId;
-  imgUrl?: string;
+  imgUrl: string;
   description: string;
   userId: Types.ObjectId;
   likeCount: number;
@@ -27,5 +27,5 @@ export type Post = Omit<RawPost, "userId"> & {
 
 export type PostPage = {
   posts: Post[];
-  nextCursor: Cursor;
+  cursor: Cursor;
 };

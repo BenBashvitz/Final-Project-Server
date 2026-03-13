@@ -15,15 +15,10 @@ class BaseController<T> {
       const insertedData = await this.model.create(dataToInsert);
       res.status(201).json(insertedData);
     } catch (error) {
-      console.error(
-        "An error occurred while creating data: ",
-        error,
-      );
+      console.error("An error occurred while creating data: ", error);
       res
         .status(500)
-        .send(
-          "An internal error occurred while creating the data.",
-        );
+        .send("An internal error occurred while creating the data.");
     }
   }
 
@@ -75,7 +70,7 @@ class BaseController<T> {
       });
 
       if (updatedData) {
-        return res.status(201).json(updatedData);
+        return res.status(200).json(updatedData);
       } else {
         return res
           .status(404)
