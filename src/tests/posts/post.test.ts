@@ -42,11 +42,9 @@ describe("with post creation", () => {
       const firstPostPage: TestPostPage = {
         posts: POSTS.slice(0, POST_PAGE_SIZE),
         nextCursor: {
-          creationDate: POSTS[POST_PAGE_SIZE].creationDate,
+          creationDate: POSTS[POST_PAGE_SIZE - 1].creationDate,
         },
       };
-
-      console.log("Expected Post Page:", firstPostPage);
 
       const firstPostPageResponse = await request(app).get("/post");
       expect(firstPostPageResponse.status).toBe(200);
@@ -62,7 +60,7 @@ describe("with post creation", () => {
       };
 
       const secondPostPageResponse = await request(app).get(
-        `/post?cursor=${JSON.stringify(firstPostPage.nextCursor)}`,
+        `/post?cursor=${JSON.stringify(firstPostPageResponse.body.nextCursor)}`,
       );
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
