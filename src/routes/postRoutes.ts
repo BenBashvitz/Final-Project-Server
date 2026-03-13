@@ -12,16 +12,11 @@ const router = express.Router();
  *       - in: query
  *         name: cursor
  *         schema:
- *           type: object
- *           description: Cursor for paginating through posts. Omit for the first page.
- *         properties:
- *           _id:
- *             type: string
- *           description: ID of the first post in the next page.
- *           creationDate:
- *             type: string
- *             format: date-time
- *             description: Creation date of the first post in the next page.
+ *           type: string
+ *           description: >
+ *             Cursor for paginating through posts, encoded as a JSON string. Omit for the first page.
+ *             The JSON object should have the shape:
+ *             { "_id": "string", "creationDate": "date-time string" }.
  *     responses:
  *       200:
  *         description: Paginated list of posts
