@@ -2,8 +2,10 @@
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import postRouter from "./routes/postRoutes";
+import swaggerUi from "swagger-ui-express";
 import authRouter from "./routes/authRoutes";
+import postRouter from "./routes/postRoutes";
+import swaggerSpec from "./swagger";
 import cors from "cors";
 
 dotenv.config({ path: ".env.dev" });
@@ -35,6 +37,7 @@ const initApp = async () => {
     console.log("Connected to MongoDB");
   });
 
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/uploads", express.static("public/uploads"));

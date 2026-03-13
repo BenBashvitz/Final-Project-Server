@@ -29,17 +29,20 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         Post: {
           type: "object",
-          required: ["title", "description", "imgUrl", "sender"],
+          required: [
+            "description",
+            "user",
+            "likeCount",
+            "commentCount",
+            "creationDate",
+            "isLikedByCurrentUser",
+            "_id",
+          ],
           properties: {
             _id: {
               type: "string",
               description: "Post ID",
               example: "697cc87180aa7bb6865a259d",
-            },
-            title: {
-              type: "string",
-              description: "The post title",
-              example: "My First Post",
             },
             imgUrl: {
               type: "string",
@@ -51,10 +54,35 @@ const options: swaggerJsdoc.Options = {
               description: "The post description",
               example: "This is the description of my new post.",
             },
-            sender: {
+            user: {
+              type: "object",
+              description: "The user who created the post",
+              example: {
+                _id: "697cc87180aa7bb6865a259d",
+                username: "john_doe",
+                imgUrl: "https://example.com/profile.jpg",
+              },
+            },
+            likeCount: {
+              type: "integer",
+              description: "Number of likes the post has received",
+              example: 5,
+            },
+            commentCount: {
+              type: "integer",
+              description: "Number of comments the post has received",
+              example: 3,
+            },
+            creationDate: {
               type: "string",
-              description: "ID of the user who created the post",
-              example: "697a78c9437f1b91bae9a42d",
+              format: "date-time",
+              description: "The date and time when the post was created",
+              example: "2024-06-01T12:00:00Z",
+            },
+            isLikedByCurrentUser: {
+              type: "boolean",
+              description: "Indicates if the current user has liked the post",
+              example: true,
             },
           },
         },

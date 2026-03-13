@@ -8,7 +8,6 @@ const postSchema = new mongoose.Schema<RawPost>({
   },
   imgUrl: {
     type: String,
-    required: true,
   },
   creationDate: {
     type: Date,
@@ -22,7 +21,7 @@ const postSchema = new mongoose.Schema<RawPost>({
     type: Number,
     default: 0,
   },
-  sender: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
     required: true,

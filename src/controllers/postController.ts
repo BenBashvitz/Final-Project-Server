@@ -29,7 +29,7 @@ class PostController extends BaseController<RawPost> {
                 { creationDate: { $lt: new Date(parsedCursor.creationDate) } },
                 {
                   creationDate: new Date(parsedCursor.creationDate),
-                  _id: { $lte: new mongoose.Types.ObjectId(parsedCursor._id) },
+                  _id: { $lt: new mongoose.Types.ObjectId(parsedCursor._id) },
                 },
               ],
             }),
@@ -77,12 +77,16 @@ class PostController extends BaseController<RawPost> {
         { $unset: "_likedByCurrentUser" },
       ]);
 
+      const hasNextPage = posts.length > pageSize;
+
       const nextCursor: Cursor = {
-        _id: posts[pageSize]?._id ?? null,
-        creationDate: posts[pageSize]?.creationDate ?? null,
+        _id: hasNextPage ? (posts[pageSize - 1]?._id ?? null) : null,
+        creationDate: hasNextPage
+          ? (posts[pageSize - 1]?.creationDate ?? null)
+          : null,
       };
 
-      if (posts.length > pageSize) {
+      if (hasNextPage) {
         posts.pop();
       }
 

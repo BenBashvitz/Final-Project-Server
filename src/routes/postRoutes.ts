@@ -12,8 +12,16 @@ const router = express.Router();
  *       - in: query
  *         name: cursor
  *         schema:
- *           type: string
- *         description: Cursor for paginating through posts. Omit for the first page.
+ *           type: object
+ *           description: Cursor for paginating through posts. Omit for the first page.
+ *         properties:
+ *           _id:
+ *             type: string
+ *           description: ID of the first post in the next page.
+ *           creationDate:
+ *             type: string
+ *             format: date-time
+ *             description: Creation date of the first post in the next page.
  *     responses:
  *       200:
  *         description: Paginated list of posts
@@ -27,8 +35,17 @@ const router = express.Router();
  *                   items:
  *                     $ref: '#/components/schemas/Post'
  *                 nextCursor:
- *                   type: string
- *                   description: Cursor to fetch the next page of results, or null if there are no more posts.
+ *                   type: object
+ *                   nullable: true
+ *                   description: Cursor to fetch the next page of results. Null if there are no more posts.
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       description: ID of the first post in the next page.
+ *                     creationDate:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation date of the first post in the next page.
  *       500:
  *         description: Internal server error
  *         content:

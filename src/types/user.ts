@@ -13,4 +13,4 @@ export type RawUser = Omit<User, "_id"> & { _id: Types.ObjectId };
 
 export type UserInput = Omit<User, "_id">;
 
-export type PostSender = Pick<User, "username" | "imgUrl" | "_id">;
+export type PostUser = Pick<User, "username" | "imgUrl" | "_id">;
