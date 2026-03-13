@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
+import {
+  DEFAULT_POSTS_PAGE_SIZE,
+  INVALID_CURSOR_ERROR_MESSAGE,
+} from "../consts";
 import postModel from "../models/postModel";
-import { Post, PostFilters, PostPage, RawPost } from "../types/post";
+import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
@@ -11,16 +14,22 @@ class PostController extends BaseController<RawPost> {
   }
 
   override async getAll(req: Request, res: Response) {
-    const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
-
-    const { cursor } = req.query as PostFilters;
-    const currentUserId = new mongoose.Types.ObjectId(
-      "69ac63d7aa7e528360e63264",
-    );
-
-    const parsedCursor = cursor ? JSON.parse(cursor) : null;
-
     try {
+      const pageSize = +(
+        process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE
+      );
+
+      const { cursor } = req.query as PostFilters;
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+
+      const parsedCursor: Cursor = cursor ? JSON.parse(cursor) : null;
+
+      if (parsedCursor && (!parsedCursor.creationDate || !parsedCursor._id)) {
+        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
+      }
+
       const posts = await this.model.aggregate<Post>([
         {
           $match: {
@@ -82,7 +91,7 @@ class PostController extends BaseController<RawPost> {
       const id = posts[pageSize - 1]?._id;
       const creationDate = posts[pageSize - 1]?.creationDate;
 
-      const cursor: PostPage["cursor"] =
+      const newCursor: PostPage["cursor"] =
         id && creationDate && hasNextPage
           ? {
               _id: id,
@@ -96,16 +105,21 @@ class PostController extends BaseController<RawPost> {
 
       const postPage: PostPage = {
         posts,
-        cursor,
+        cursor: newCursor,
       };
 
-      res.send(postPage);
+      return res.send(postPage);
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
+      }
+
       console.error(
         `An error occurred while getting the current post page: `,
         error,
       );
-      res
+
+      return res
         .status(500)
         .send("An error occurred while getting the current post page");
     }

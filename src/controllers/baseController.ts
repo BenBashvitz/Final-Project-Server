@@ -28,10 +28,10 @@ class BaseController<T> {
     try {
       const data = await this.model.find(filters);
 
-      res.send(data);
+      return res.send(data);
     } catch (error) {
       console.error("An error occurred while getting all data: ", error);
-      res.status(500).send("An error occurred while getting all data");
+      return res.status(500).send("An error occurred while getting all data");
     }
   }
 
