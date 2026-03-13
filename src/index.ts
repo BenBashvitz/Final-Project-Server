@@ -1,5 +1,4 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
-import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
@@ -7,8 +6,6 @@ import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
 import cors from "cors";
-
-dotenv.config({ path: ".env.dev" });
 
 const initApp = async () => {
   const app = express();

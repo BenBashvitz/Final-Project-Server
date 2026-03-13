@@ -11,17 +11,17 @@ const router = express.Router();
  *     parameters:
  *       - in: query
  *         name: cursor
+ *         description: Cursor for paginating through posts. Omit for the first page.
  *         schema:
  *           type: object
- *           description: Cursor for paginating through posts. Omit for the first page.
- *         properties:
- *           _id:
- *             type: string
- *           description: ID of the first post in the next page.
- *           creationDate:
- *             type: string
- *             format: date-time
- *             description: Creation date of the first post in the next page.
+ *           properties:
+ *             _id:
+ *               type: string
+ *               description: ID of the last post in the current page, used as a reference for fetching the next page.
+ *             creationDate:
+ *               type: string
+ *               format: date-time
+ *               description: Creation date of the last post in the current page, used as a reference for fetching the next page.
  *     responses:
  *       200:
  *         description: Paginated list of posts
@@ -34,18 +34,18 @@ const router = express.Router();
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Post'
- *                 nextCursor:
+ *                 cursor:
  *                   type: object
  *                   nullable: true
  *                   description: Cursor to fetch the next page of results. Null if there are no more posts.
  *                   properties:
  *                     _id:
  *                       type: string
- *                       description: ID of the first post in the next page.
+ *                       description: ID of the last post in the current page, used as a reference for fetching the next page.
  *                     creationDate:
  *                       type: string
  *                       format: date-time
- *                       description: Creation date of the first post in the next page.
+ *                       description: Creation date of the last post in the current page, used as a reference for fetching the next page.
  *       500:
  *         description: Internal server error
  *         content:

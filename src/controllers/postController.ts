@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
 import postModel from "../models/postModel";
-import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
+import { Post, PostFilters, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
@@ -79,12 +79,16 @@ class PostController extends BaseController<RawPost> {
 
       const hasNextPage = posts.length > pageSize;
 
-      const cursor: Cursor = hasNextPage
-        ? {
-            _id: posts[pageSize - 1]?._id ?? null,
-            creationDate: posts[pageSize - 1]?.creationDate ?? null,
-          }
-        : { _id: null, creationDate: null };
+      const id = posts[pageSize - 1]?._id;
+      const creationDate = posts[pageSize - 1]?.creationDate;
+
+      const cursor: PostPage["cursor"] =
+        id && creationDate && hasNextPage
+          ? {
+              _id: id,
+              creationDate,
+            }
+          : null;
 
       if (hasNextPage) {
         posts.pop();
