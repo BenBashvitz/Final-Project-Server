@@ -74,7 +74,7 @@ class PostController extends BaseController<RawPost> {
             },
           },
         },
-        { $unset: "_likedByCurrentUser" },
+        { $unset: ["_likedByCurrentUser", "userId"] },
       ]);
 
       const hasNextPage = posts.length > pageSize;
