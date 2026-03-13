@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
+import {
+  DEFAULT_POSTS_PAGE_SIZE,
+  INVALID_CURSOR_ERROR_MESSAGE,
+} from "../consts";
 import postModel from "../models/postModel";
 import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
@@ -50,21 +53,29 @@ class PostController extends BaseController<RawPost> {
           },
         },
       },
-      { $unset: "_likedByCurrentUser" },
+      { $unset: ["_likedByCurrentUser", "userId"] },
     ];
   }
 
   override async getAll(req: Request, res: Response) {
-    const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
-
-    const { cursor } = req.query as PostFilters;
-    const currentUserId = new mongoose.Types.ObjectId(
-      "69ac63d7aa7e528360e63264",
-    );
-
-    const parsedCursor = cursor ? JSON.parse(cursor) : null;
-
     try {
+      let pageSize = Number(process.env.POSTS_PAGE_SIZE);
+
+      if (isNaN(pageSize) || pageSize <= 0) {
+        pageSize = DEFAULT_POSTS_PAGE_SIZE;
+      }
+
+      const { cursor } = req.query as PostFilters;
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+
+      const parsedCursor: Cursor = cursor ? JSON.parse(cursor) : null;
+
+      if (parsedCursor && (!parsedCursor.creationDate || !parsedCursor._id)) {
+        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
+      }
+
       const posts = await this.model.aggregate<Post>([
         {
           $match: {
@@ -73,7 +84,7 @@ class PostController extends BaseController<RawPost> {
                 { creationDate: { $lt: new Date(parsedCursor.creationDate) } },
                 {
                   creationDate: new Date(parsedCursor.creationDate),
-                  _id: { $lte: new mongoose.Types.ObjectId(parsedCursor._id) },
+                  _id: { $lt: new mongoose.Types.ObjectId(parsedCursor._id) },
                 },
               ],
             }),
@@ -84,27 +95,40 @@ class PostController extends BaseController<RawPost> {
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
 
-      const nextCursor: Cursor = {
-        _id: posts[pageSize]?._id ?? null,
-        creationDate: posts[pageSize]?.creationDate ?? null,
-      };
+      const hasNextPage = posts.length > pageSize;
 
-      if (posts.length > pageSize) {
+      const id = posts[pageSize - 1]?._id;
+      const creationDate = posts[pageSize - 1]?.creationDate;
+
+      const newCursor: PostPage["cursor"] =
+        id && creationDate && hasNextPage
+          ? {
+              _id: id,
+              creationDate,
+            }
+          : null;
+
+      if (hasNextPage) {
         posts.pop();
       }
 
       const postPage: PostPage = {
         posts,
-        nextCursor,
+        cursor: newCursor,
       };
 
-      res.send(postPage);
+      return res.send(postPage);
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
+      }
+
       console.error(
-        `An error occurred while getting the post page with the cursor ${cursor}: `,
+        `An error occurred while getting the current post page: `,
         error,
       );
-      res
+
+      return res
         .status(500)
         .send(
           `An error occurred while getting the current post page with the provided cursor: ${cursor}`,

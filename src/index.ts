@@ -1,20 +1,19 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
-import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import swaggerUi from "swagger-ui-express";
 import authRouter from "./routes/authRoutes";
-import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
-
-dotenv.config({ path: ".env.dev" });
+import multerRouter from "./routes/multerRoutes";
+import swaggerSpec from "./swagger";
+import cors from "cors";
 
 const initApp = async () => {
   const app = express();
   app.use(express.json());
   app.use(
     cors({
-      origin: ["http://localhost:5173"],
+      origin: process.env.CLIENT_URL ?? "",
     }),
   );
 
@@ -36,6 +35,7 @@ const initApp = async () => {
     console.log("Connected to MongoDB");
   });
 
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);

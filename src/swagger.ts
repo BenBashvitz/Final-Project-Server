@@ -1,5 +1,6 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config({ path: ".env.dev" });
 
@@ -14,8 +15,8 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: "http://localhost:" + process.env.PORT,
-        description: "Development server",
+        url: `${process.env.SERVER_URL}:${process.env.PORT}`,
+        description: "Final Project Server",
       },
     ],
     components: {
@@ -29,17 +30,21 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         Post: {
           type: "object",
-          required: ["title", "description", "imgUrl", "userId"],
+          required: [
+            "description",
+            "user",
+            "imgUrl",
+            "likeCount",
+            "commentCount",
+            "creationDate",
+            "isLikedByCurrentUser",
+            "_id",
+          ],
           properties: {
             _id: {
               type: "string",
               description: "Post ID",
               example: "697cc87180aa7bb6865a259d",
-            },
-            title: {
-              type: "string",
-              description: "The post title",
-              example: "My First Post",
             },
             imgUrl: {
               type: "string",
@@ -51,10 +56,35 @@ const options: swaggerJsdoc.Options = {
               description: "The post description",
               example: "This is the description of my new post.",
             },
-            userId: {
+            user: {
+              type: "object",
+              description: "The user who created the post",
+              example: {
+                _id: "697cc87180aa7bb6865a259d",
+                username: "john_doe",
+                imgUrl: "https://example.com/profile.jpg",
+              },
+            },
+            likeCount: {
+              type: "integer",
+              description: "Number of likes the post has received",
+              example: 5,
+            },
+            commentCount: {
+              type: "integer",
+              description: "Number of comments the post has received",
+              example: 3,
+            },
+            creationDate: {
               type: "string",
-              description: "ID of the user who created the post",
-              example: "697a78c9437f1b91bae9a42d",
+              format: "date-time",
+              description: "The date and time when the post was created",
+              example: "2024-06-01T12:00:00Z",
+            },
+            isLikedByCurrentUser: {
+              type: "boolean",
+              description: "Indicates if the current user has liked the post",
+              example: true,
             },
           },
         },
@@ -66,7 +96,7 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ["./src/routes/*.ts"],
+  apis: [path.join(__dirname, "routes/*.{ts,js}")],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

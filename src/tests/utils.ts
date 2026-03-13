@@ -1,12 +1,12 @@
 import { Express } from "express";
+import jwt from "jsonwebtoken";
 import { Model } from "mongoose";
 import request from "supertest";
 import userModel from "../models/userModel";
-import { Tokens, TokenPayload } from "../types/token";
-import { USERS } from "./consts";
-import jwt from "jsonwebtoken";
-import { UserInput } from "../types/user";
 import type { RawPost } from "../types/post";
+import { TokenPayload, Tokens } from "../types/token";
+import { UserInput } from "../types/user";
+import { USERS } from "./consts";
 import type { PostInput, PostInputWithUserId } from "./posts/types";
 
 export const cleanupBeforeCommentTests = async (

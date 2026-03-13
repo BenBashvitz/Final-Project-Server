@@ -30,4 +30,4 @@ const postSchema = new mongoose.Schema<RawPost>({
 
 postSchema.index({ creationDate: -1, _id: -1 });
 
-export default mongoose.model("Post", postSchema);
+export default mongoose.model("post", postSchema);
