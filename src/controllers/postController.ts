@@ -79,12 +79,12 @@ class PostController extends BaseController<RawPost> {
 
       const hasNextPage = posts.length > pageSize;
 
-      const nextCursor: Cursor = {
-        _id: hasNextPage ? (posts[pageSize - 1]?._id ?? null) : null,
-        creationDate: hasNextPage
-          ? (posts[pageSize - 1]?.creationDate ?? null)
-          : null,
-      };
+      const nextCursor: Cursor = hasNextPage
+        ? {
+            _id: posts[pageSize - 1]?._id ?? null,
+            creationDate: posts[pageSize - 1]?.creationDate ?? null,
+          }
+        : { _id: null, creationDate: null };
 
       if (hasNextPage) {
         posts.pop();
