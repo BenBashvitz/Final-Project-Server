@@ -4,7 +4,7 @@ import { Like } from "../types/like";
 const likeSchema = new mongoose.Schema<Like>({
   postId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Post",
+    ref: "post",
     required: true,
   },
   userId: {

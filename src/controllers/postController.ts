@@ -15,9 +15,11 @@ class PostController extends BaseController<RawPost> {
 
   override async getAll(req: Request, res: Response) {
     try {
-      const pageSize = +(
-        process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE
-      );
+      let pageSize = Number(process.env.POSTS_PAGE_SIZE);
+
+      if (isNaN(pageSize) || pageSize <= 0) {
+        pageSize = DEFAULT_POSTS_PAGE_SIZE;
+      }
 
       const { cursor } = req.query as PostFilters;
       const currentUserId = new mongoose.Types.ObjectId(

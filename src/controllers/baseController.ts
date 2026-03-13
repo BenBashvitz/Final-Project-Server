@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 
 class BaseController<T> {
   model: Model<T>;
@@ -23,7 +23,7 @@ class BaseController<T> {
   }
 
   async getAll(req: Request, res: Response) {
-    const filters = req.query;
+    const filters = mongoose.sanitizeFilter(req.query);
 
     try {
       const data = await this.model.find(filters);
