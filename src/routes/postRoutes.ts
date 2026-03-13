@@ -65,6 +65,7 @@ router.get("/", postController.getAll.bind(postController));
  *             type: object
  *             required:
  *               - description
+ *               - imgUrl
  *             properties:
  *               description:
  *                 type: string

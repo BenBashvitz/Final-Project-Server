@@ -130,9 +130,7 @@ class PostController extends BaseController<RawPost> {
 
       return res
         .status(500)
-        .send(
-          `An error occurred while getting the current post page with the provided cursor: ${cursor}`,
-        );
+        .send(`An error occurred while getting the current post page`);
     }
   }
 
@@ -151,6 +149,8 @@ class PostController extends BaseController<RawPost> {
         { $match: { _id: inserted._id } },
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
+
+      console.log("enrichedPost: ", enrichedPost);
 
       res.status(201).json(enrichedPost);
     } catch (error) {

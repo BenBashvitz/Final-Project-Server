@@ -8,6 +8,7 @@ const postSchema = new mongoose.Schema<RawPost>({
   },
   imgUrl: {
     type: String,
+    required: true,
   },
   creationDate: {
     type: Date,
