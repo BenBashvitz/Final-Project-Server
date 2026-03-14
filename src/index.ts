@@ -7,7 +7,7 @@ import postRouter from "./routes/postRoutes";
 import multerRouter from "./routes/multerRoutes";
 import swaggerSpec from "./swagger";
 import cors from "cors";
-import config from "./config";
+import config from "./configs/envVar";
 
 const initApp = async () => {
   const app = express();

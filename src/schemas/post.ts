@@ -1,21 +1,23 @@
 import mongoose from "mongoose";
 import z from "zod";
 
-const CursorSchema = z.object({
-  _id: z.string().transform((value, ctx) => {
-    try {
-      return new mongoose.Types.ObjectId(value);
-    } catch (error) {
-      ctx.addIssue({
-        format: "object_id",
-        code: "invalid_format",
-        message: "Invalid ObjectID format",
-        input: value,
-      });
+const PostIdSchema = z.string().transform((value, ctx) => {
+  try {
+    return new mongoose.Types.ObjectId(value);
+  } catch (error) {
+    ctx.addIssue({
+      format: "object_id",
+      code: "invalid_format",
+      message: "Invalid ObjectID format",
+      input: value,
+    });
 
-      return z.NEVER;
-    }
-  }),
+    return z.NEVER;
+  }
+});
+
+const CursorSchema = z.object({
+  _id: PostIdSchema,
   creationDate: z.iso.datetime().transform((str) => new Date(str)),
 });
 
@@ -39,4 +41,13 @@ export const GetAllPostsQueryParams = z.object({
       }
     })
     .pipe(CursorSchema.optional()),
+});
+
+export const UpdatePostParams = z.object({
+  id: PostIdSchema,
+});
+
+export const UpdatePostBody = z.object({
+  description: z.string(),
+  imgUrl: z.string(),
 });
