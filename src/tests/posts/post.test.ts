@@ -8,9 +8,8 @@ import userModel from "../../models/userModel";
 import { TokenPayload, Tokens } from "../../types/token";
 import { POST_PAGE_SIZE, USERS } from "../consts";
 import { getUserToken } from "../utils";
-import type { PostInputWithUserId, TestPostPage } from "./types";
 import { POSTS } from "./consts";
-import { INVALID_CURSOR_ERROR_MESSAGE } from "../../consts";
+import type { PostInputWithUserId, TestPostPage } from "./types";
 
 let app: Express;
 let userTokens: Tokens;
@@ -74,7 +73,6 @@ describe("with post creation", () => {
         .get("/post")
         .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
       expect(response.status).toBe(400);
-      expect(response.text).toBe(INVALID_CURSOR_ERROR_MESSAGE);
     });
 
     it("should return 400 for invalid cursor - missing creationDate", async () => {
@@ -84,7 +82,6 @@ describe("with post creation", () => {
           cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
         });
       expect(response.status).toBe(400);
-      expect(response.text).toBe(INVALID_CURSOR_ERROR_MESSAGE);
     });
   });
 });

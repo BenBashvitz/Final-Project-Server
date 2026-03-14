@@ -6,23 +6,18 @@ import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
 import cors from "cors";
+import config from "./config";
 
 const initApp = async () => {
   const app = express();
   app.use(express.json());
   app.use(
     cors({
-      origin: process.env.CLIENT_URL ?? "",
+      origin: config.CLIENT_URL,
     }),
   );
 
-  const dbUrl = process.env.MONGODB_URL;
-
-  if (!dbUrl) {
-    throw new Error("Not defined db url");
-  }
-
-  await mongoose.connect(dbUrl);
+  await mongoose.connect(config.MONGODB_URL);
 
   const db = mongoose.connection;
 
