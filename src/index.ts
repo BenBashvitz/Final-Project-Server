@@ -1,30 +1,24 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
-import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import swaggerUi from "swagger-ui-express";
 import authRouter from "./routes/authRoutes";
-import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
-
-dotenv.config({ path: ".env.dev" });
+import multerRouter from "./routes/multerRoutes";
+import swaggerSpec from "./swagger";
+import cors from "cors";
+import config from "./config";
 
 const initApp = async () => {
   const app = express();
   app.use(express.json());
   app.use(
     cors({
-      origin: ["http://localhost:5173"],
+      origin: config.CLIENT_URL,
     }),
   );
 
-  const dbUrl = process.env.MONGODB_URL;
-
-  if (!dbUrl) {
-    throw new Error("Not defined db url");
-  }
-
-  await mongoose.connect(dbUrl);
+  await mongoose.connect(config.MONGODB_URL);
 
   const db = mongoose.connection;
 
@@ -36,6 +30,7 @@ const initApp = async () => {
     console.log("Connected to MongoDB");
   });
 
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);

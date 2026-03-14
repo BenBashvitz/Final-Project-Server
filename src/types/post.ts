@@ -2,13 +2,13 @@ import { Types } from "mongoose";
 import { PostUser } from "./user";
 
 export type Cursor = {
-  _id: RawPost["_id"] | null;
-  creationDate: RawPost["creationDate"] | null;
+  _id: RawPost["_id"];
+  creationDate: RawPost["creationDate"];
 };
 
 export type RawPost = {
   _id: Types.ObjectId;
-  imgUrl?: string;
+  imgUrl: string;
   description: string;
   userId: Types.ObjectId;
   likeCount: number;
@@ -17,7 +17,7 @@ export type RawPost = {
 };
 
 export type PostFilters = {
-  cursor: string;
+  cursor?: string;
 };
 
 export type Post = Omit<RawPost, "userId"> & {
@@ -27,5 +27,5 @@ export type Post = Omit<RawPost, "userId"> & {
 
 export type PostPage = {
   posts: Post[];
-  nextCursor: Cursor;
+  cursor: Cursor | null;
 };

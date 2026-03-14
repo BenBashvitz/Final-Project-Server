@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { DEFAULT_POSTS_PAGE_SIZE } from "../consts";
+import z, { ZodError } from "zod";
+import config from "../config";
 import postModel from "../models/postModel";
-import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
+import { GetAllPostsQueryParams } from "../schemas/post";
+import { Post, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
 import { AuthRequest } from "../types/request";
 
@@ -50,65 +52,73 @@ class PostController extends BaseController<RawPost> {
           },
         },
       },
-      { $unset: "_likedByCurrentUser" },
+      { $unset: ["_likedByCurrentUser", "userId"] },
     ];
   }
 
   override async getAll(req: Request, res: Response) {
-    const pageSize = +(process.env.POSTS_PAGE_SIZE ?? DEFAULT_POSTS_PAGE_SIZE);
-
-    const { cursor } = req.query as PostFilters;
-    const currentUserId = new mongoose.Types.ObjectId(
-      "69ac63d7aa7e528360e63264",
-    );
-
-    const parsedCursor = cursor ? JSON.parse(cursor) : null;
-
     try {
+      const { cursor } = GetAllPostsQueryParams.parse(req.query);
+
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+
       const posts = await this.model.aggregate<Post>([
         {
           $match: {
-            ...(parsedCursor && {
+            ...(cursor && {
               $or: [
-                { creationDate: { $lt: new Date(parsedCursor.creationDate) } },
+                { creationDate: { $lt: cursor.creationDate } },
                 {
-                  creationDate: new Date(parsedCursor.creationDate),
-                  _id: { $lte: new mongoose.Types.ObjectId(parsedCursor._id) },
+                  creationDate: cursor.creationDate,
+                  _id: { $lt: cursor._id },
                 },
               ],
             }),
           },
         },
         { $sort: { creationDate: -1, _id: -1 } },
-        { $limit: pageSize + 1 },
+        { $limit: config.POSTS_PAGE_SIZE + 1 },
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
 
-      const nextCursor: Cursor = {
-        _id: posts[pageSize]?._id ?? null,
-        creationDate: posts[pageSize]?.creationDate ?? null,
-      };
+      const hasNextPage = posts.length > config.POSTS_PAGE_SIZE;
 
-      if (posts.length > pageSize) {
+      const id = posts[config.POSTS_PAGE_SIZE - 1]?._id;
+      const creationDate = posts[config.POSTS_PAGE_SIZE - 1]?.creationDate;
+
+      const newCursor: PostPage["cursor"] =
+        id && creationDate && hasNextPage
+          ? {
+              _id: id,
+              creationDate,
+            }
+          : null;
+
+      if (hasNextPage) {
         posts.pop();
       }
 
       const postPage: PostPage = {
         posts,
-        nextCursor,
+        cursor: newCursor,
       };
 
-      res.send(postPage);
+      return res.send(postPage);
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
       console.error(
-        `An error occurred while getting the post page with the cursor ${cursor}: `,
+        `An error occurred while getting the current post page: `,
         error,
       );
-      res
+
+      return res
         .status(500)
-        .send(
-          `An error occurred while getting the current post page with the provided cursor: ${cursor}`,
-        );
+        .send(`An error occurred while getting the current post page`);
     }
   }
 

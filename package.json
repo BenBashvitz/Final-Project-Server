@@ -9,8 +9,8 @@
   "scripts": {
     "start": "tsc && node --env-file=.env.dev dist/server.js",
     "dev": "nodemon src/server.ts",
-    "test": "jest --detectOpenHandles -–runInBand",
-    "test-post": "jest --detectOpenHandles -–runInBand src/tests/post.test.ts"
+    "test": "jest --detectOpenHandles --runInBand",
+    "test-post": "jest --detectOpenHandles --runInBand src/tests/posts/post.test.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -21,7 +21,8 @@
     "mongoose": "^9.1.5",
     "multer": "^2.1.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

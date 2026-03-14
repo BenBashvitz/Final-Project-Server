@@ -7,12 +7,13 @@ export type PostInput = Pick<RawPost, "description" | "imgUrl"> & {
 export type PostInputWithUserId = PostInput & {
   userId: string;
 };
+
 type TestCursor = {
-  _id?: string | null;
-  creationDate: string | null;
+  _id?: string;
+  creationDate: string;
 };
 
 export type TestPostPage = {
   posts: PostInput[];
-  nextCursor: TestCursor;
+  cursor: TestCursor | null;
 };

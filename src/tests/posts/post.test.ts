@@ -70,32 +70,47 @@ describe("with post creation", () => {
     it("should retrieve all pages of posts", async () => {
       const firstPostPage: TestPostPage = {
         posts: POSTS.slice(0, POST_PAGE_SIZE),
-        nextCursor: {
-          creationDate: POSTS[POST_PAGE_SIZE].creationDate,
+        cursor: {
+          creationDate: POSTS[POST_PAGE_SIZE - 1].creationDate,
         },
       };
 
-      console.log("Expected Post Page:", firstPostPage);
-
       const firstPostPageResponse = await request(app).get("/post");
+      const responseBody: TestPostPage = firstPostPageResponse.body;
+
       expect(firstPostPageResponse.status).toBe(200);
-      expect(firstPostPageResponse.body).toMatchObject(firstPostPage);
-      expect(firstPostPageResponse.body.posts.length).toBe(POST_PAGE_SIZE);
+      expect(responseBody).toMatchObject(firstPostPage);
+      expect(responseBody.posts.length).toBe(POST_PAGE_SIZE);
 
       const secondPostPage: TestPostPage = {
         posts: POSTS.slice(POST_PAGE_SIZE),
-        nextCursor: {
-          creationDate: null,
-          _id: null,
-        },
+        cursor: null,
       };
 
-      const secondPostPageResponse = await request(app).get(
-        `/post?cursor=${JSON.stringify(firstPostPage.nextCursor)}`,
-      );
+      const secondPostPageResponse = await request(app)
+        .get(`/post`)
+        .query({
+          cursor: JSON.stringify(responseBody.cursor),
+        });
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
       expect(secondPostPageResponse.body.posts.length).toBe(POST_PAGE_SIZE);
+    });
+
+    it("should return 400 for invalid cursor - missing _id", async () => {
+      const response = await request(app)
+        .get("/post")
+        .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 for invalid cursor - missing creationDate", async () => {
+      const response = await request(app)
+        .get("/post")
+        .query({
+          cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
+        });
+      expect(response.status).toBe(400);
     });
   });
 });

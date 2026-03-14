@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 
 class BaseController<T> {
   model: Model<T>;
@@ -15,28 +15,23 @@ class BaseController<T> {
       const insertedData = await this.model.create(dataToInsert);
       res.status(201).json(insertedData);
     } catch (error) {
-      console.error(
-        `An error occurred while creating the following data ${req.body}: `,
-        error,
-      );
+      console.error("An error occurred while creating data: ", error);
       res
         .status(500)
-        .send(
-          `An error occurred while creating the following data: ${req.body}`,
-        );
+        .send("An internal error occurred while creating the data.");
     }
   }
 
   async getAll(req: Request, res: Response) {
-    const filters = req.query;
+    const filters = mongoose.sanitizeFilter(req.query);
 
     try {
       const data = await this.model.find(filters);
 
-      res.send(data);
+      return res.send(data);
     } catch (error) {
       console.error("An error occurred while getting all data: ", error);
-      res.status(500).send("An error occurred while getting all data");
+      return res.status(500).send("An error occurred while getting all data");
     }
   }
 
@@ -75,7 +70,7 @@ class BaseController<T> {
       });
 
       if (updatedData) {
-        return res.status(201).json(updatedData);
+        return res.status(200).json(updatedData);
       } else {
         return res
           .status(404)

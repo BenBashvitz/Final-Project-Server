@@ -7,7 +7,7 @@ initApp().then((app) => {
     if (error) {
       console.error(
         "An error occurred while listening for connections: ",
-        error
+        error,
       );
     } else {
       console.log(`Server is running on http://localhost:${PORT}`);
