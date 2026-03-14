@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import {
-  DEFAULT_POSTS_PAGE_SIZE,
-  INVALID_CURSOR_ERROR_MESSAGE,
-} from "../consts";
+import z, { ZodError } from "zod";
+import config from "../config";
 import postModel from "../models/postModel";
-import { Cursor, Post, PostFilters, PostPage, RawPost } from "../types/post";
+import { GetAllPostsQueryParams } from "../schemas/post";
+import { Post, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
 import { AuthRequest } from "../types/request";
 
@@ -59,46 +58,35 @@ class PostController extends BaseController<RawPost> {
 
   override async getAll(req: Request, res: Response) {
     try {
-      let pageSize = Number(process.env.POSTS_PAGE_SIZE);
+      const { cursor } = GetAllPostsQueryParams.parse(req.query);
 
-      if (isNaN(pageSize) || pageSize <= 0) {
-        pageSize = DEFAULT_POSTS_PAGE_SIZE;
-      }
-
-      const { cursor } = req.query as PostFilters;
       const currentUserId = new mongoose.Types.ObjectId(
         "69ac63d7aa7e528360e63264",
       );
 
-      const parsedCursor: Cursor = cursor ? JSON.parse(cursor) : null;
-
-      if (parsedCursor && (!parsedCursor.creationDate || !parsedCursor._id)) {
-        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
-      }
-
       const posts = await this.model.aggregate<Post>([
         {
           $match: {
-            ...(parsedCursor && {
+            ...(cursor && {
               $or: [
-                { creationDate: { $lt: new Date(parsedCursor.creationDate) } },
+                { creationDate: { $lt: cursor.creationDate } },
                 {
-                  creationDate: new Date(parsedCursor.creationDate),
-                  _id: { $lt: new mongoose.Types.ObjectId(parsedCursor._id) },
+                  creationDate: cursor.creationDate,
+                  _id: { $lt: cursor._id },
                 },
               ],
             }),
           },
         },
         { $sort: { creationDate: -1, _id: -1 } },
-        { $limit: pageSize + 1 },
+        { $limit: config.POSTS_PAGE_SIZE + 1 },
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
 
-      const hasNextPage = posts.length > pageSize;
+      const hasNextPage = posts.length > config.POSTS_PAGE_SIZE;
 
-      const id = posts[pageSize - 1]?._id;
-      const creationDate = posts[pageSize - 1]?.creationDate;
+      const id = posts[config.POSTS_PAGE_SIZE - 1]?._id;
+      const creationDate = posts[config.POSTS_PAGE_SIZE - 1]?.creationDate;
 
       const newCursor: PostPage["cursor"] =
         id && creationDate && hasNextPage
@@ -119,8 +107,8 @@ class PostController extends BaseController<RawPost> {
 
       return res.send(postPage);
     } catch (error) {
-      if (error instanceof SyntaxError) {
-        return res.status(400).send(INVALID_CURSOR_ERROR_MESSAGE);
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
       }
 
       console.error(
@@ -149,8 +137,6 @@ class PostController extends BaseController<RawPost> {
         { $match: { _id: inserted._id } },
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
-
-      console.log("enrichedPost: ", enrichedPost);
 
       res.status(201).json(enrichedPost);
     } catch (error) {

@@ -1,7 +1,4 @@
-import dotenv from "dotenv";
 import initApp from "./index";
-
-dotenv.config({ path: ".env.dev" });
 
 const PORT = process.env.PORT;
 
