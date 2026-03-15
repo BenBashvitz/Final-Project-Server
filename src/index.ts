@@ -8,6 +8,7 @@ import multerRouter from "./routes/multerRoutes";
 import swaggerSpec from "./swagger";
 import cors from "cors";
 import config from "./config";
+import { UPLOADS_ROUTE } from "./consts";
 
 const initApp = async () => {
   const app = express();
@@ -34,7 +35,7 @@ const initApp = async () => {
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);
-  app.use("/uploads", express.static("public/uploads"));
+  app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
 
   return app;
 };

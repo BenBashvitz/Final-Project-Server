@@ -1,6 +1,7 @@
 import express, { Response } from "express";
 import multer from "multer";
 import { FileRequest } from "../types/request";
+import { UPLOADS_ROUTE } from "../consts";
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.post(
     console.log("req.file.path:", req.file?.path);
 
     const parts = req.file?.path.split("\\") ?? [];
-    const imgUrl = base + "uploads/" + parts[parts.length - 1];
+    const imgUrl = base + `${UPLOADS_ROUTE}/` + parts[parts.length - 1];
 
     console.log("router.post(/file: " + imgUrl);
     res.status(200).send({ imgUrl });

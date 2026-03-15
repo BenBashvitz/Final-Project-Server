@@ -14,5 +14,3 @@ export const USERS: UserInput[] = [
     refreshTokens: [],
   },
 ];
-
-export const POST_PAGE_SIZE = Number(process.env.POSTS_PAGE_SIZE);
