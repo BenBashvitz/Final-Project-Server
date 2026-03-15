@@ -1,17 +1,13 @@
-import { Response, NextFunction } from "express";
-import { FileRequest } from "../types/request";
-import { unlink } from "fs/promises";
+import { NextFunction, Response } from "express";
 import { UPLOADS_ROUTE } from "../consts";
+import { FileRequest } from "../types/request";
+import { removeFile } from "../utils/removeLocalFile";
 
 export const getImgUrl = (req: FileRequest, res: Response) => {
   const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
 
-  console.log("req.file.path:", req.file?.path);
-
   const parts = req.file?.path.split("\\") ?? [];
   const imgUrl = base + `${UPLOADS_ROUTE}/` + parts[parts.length - 1];
-
-  console.log("router.post(/file: " + imgUrl);
 
   res.status(200).send({ imgUrl });
 };
@@ -22,11 +18,8 @@ export const deleteOldImg = async (
   next: NextFunction,
 ) => {
   try {
-    const oldImgUrlParts = req.body.oldImgUrl.split("/");
-    const oldImgName = oldImgUrlParts[oldImgUrlParts.length - 1];
-    const oldImgPath = "public/uploads/" + oldImgName;
+    await removeFile(req.body.oldImgUrl);
 
-    await unlink(oldImgPath);
     next();
   } catch (error) {
     console.error("An error occurred while deleting the old image: ", error);

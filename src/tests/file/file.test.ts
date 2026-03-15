@@ -1,10 +1,13 @@
 import type { Express } from "express";
+import mongoose from "mongoose";
 import request from "supertest";
 import initApp from "../../index";
-import mongoose from "mongoose";
-import { EXAMPLE_FILE_NAME } from "./consts";
+import { removeFile } from "../../utils/removeLocalFile";
+import { EXAMPLE_FILE_NAME, NEW_EXAMPLE_FILE_NAME } from "./consts";
 
 let app: Express;
+let oldImgUrl: string;
+let newImgUrl: string;
 
 beforeAll(async () => {
   app = await initApp();
@@ -20,6 +23,25 @@ describe("Upload file", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("imgUrl");
 
+    oldImgUrl = response.body.imgUrl;
+    const fileUrl = response.body.imgUrl.replace(/^.*\/\/[^/]+/, "");
+
+    const fileResponse = await request(app).get(fileUrl);
+    expect(fileResponse.statusCode).toBe(200);
+  });
+
+  it("should replace an old file with a new one", async () => {
+    const filePath = `${__dirname}/${NEW_EXAMPLE_FILE_NAME}`;
+
+    const response = await request(app)
+      .put("/upload")
+      .attach("file", filePath)
+      .field("oldImgUrl", oldImgUrl);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("imgUrl");
+
+    newImgUrl = response.body.imgUrl;
     const fileUrl = response.body.imgUrl.replace(/^.*\/\/[^/]+/, "");
 
     const fileResponse = await request(app).get(fileUrl);
@@ -28,5 +50,6 @@ describe("Upload file", () => {
 });
 
 afterAll(async () => {
+  await removeFile(newImgUrl);
   await mongoose.connection.close();
 });
