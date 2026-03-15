@@ -7,7 +7,7 @@ import { EXAMPLE_FILE_NAME, NEW_EXAMPLE_FILE_NAME } from "./consts";
 
 let app: Express;
 let oldImgUrl: string;
-let newImgUrl: string;
+let newImgUrl: string | undefined;
 
 beforeAll(async () => {
   app = await initApp();
@@ -47,9 +47,20 @@ describe("Upload file", () => {
     const fileResponse = await request(app).get(fileUrl);
     expect(fileResponse.statusCode).toBe(200);
   });
+
+  it("should return a 400 error if oldImgUrl is missing while replacing a file", async () => {
+    const filePath = `${__dirname}/${NEW_EXAMPLE_FILE_NAME}`;
+
+    const response = await request(app).put("/upload").attach("file", filePath);
+
+    expect(response.statusCode).toBe(400);
+  });
 });
 
 afterAll(async () => {
-  await removeFile(newImgUrl);
+  if (newImgUrl) {
+    await removeFile(newImgUrl);
+  }
+
   await mongoose.connection.close();
 });
