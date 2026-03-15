@@ -6,10 +6,11 @@ import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
 import { TokenPayload, Tokens } from "../../types/token";
-import { POST_PAGE_SIZE, USERS } from "../consts";
+import testConfig from "../config";
+import { USERS } from "../consts";
 import { getUserToken } from "../utils";
-import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
 import { POSTS } from "./consts";
+import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
 
 let app: Express;
 let userTokens: Tokens;
@@ -69,9 +70,9 @@ describe("with post creation", () => {
   describe("Get posts", () => {
     it("should retrieve all pages of posts", async () => {
       const firstPostPage: TestPostPage = {
-        posts: POSTS.slice(0, POST_PAGE_SIZE),
+        posts: POSTS.slice(0, testConfig.POSTS_PAGE_SIZE),
         cursor: {
-          creationDate: POSTS[POST_PAGE_SIZE - 1].creationDate,
+          creationDate: POSTS[testConfig.POSTS_PAGE_SIZE - 1].creationDate,
         },
       };
 
@@ -80,10 +81,10 @@ describe("with post creation", () => {
 
       expect(firstPostPageResponse.status).toBe(200);
       expect(responseBody).toMatchObject(firstPostPage);
-      expect(responseBody.posts.length).toBe(POST_PAGE_SIZE);
+      expect(responseBody.posts.length).toBe(testConfig.POSTS_PAGE_SIZE);
 
       const secondPostPage: TestPostPage = {
-        posts: POSTS.slice(POST_PAGE_SIZE),
+        posts: POSTS.slice(testConfig.POSTS_PAGE_SIZE),
         cursor: null,
       };
 
@@ -94,7 +95,9 @@ describe("with post creation", () => {
         });
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
-      expect(secondPostPageResponse.body.posts.length).toBe(POST_PAGE_SIZE);
+      expect(secondPostPageResponse.body.posts.length).toBe(
+        testConfig.POSTS_PAGE_SIZE,
+      );
     });
 
     it("should return 400 for invalid cursor - missing _id", async () => {

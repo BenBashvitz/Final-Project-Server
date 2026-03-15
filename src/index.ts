@@ -1,13 +1,14 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
+import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
-import authRouter from "./routes/authRoutes";
-import postRouter from "./routes/postRoutes";
-import multerRouter from "./routes/multerRoutes";
-import swaggerSpec from "./swagger";
-import cors from "cors";
 import config from "./configs/envVar";
+import { UPLOADS_ROUTE } from "./consts";
+import authRouter from "./routes/authRoutes";
+import multerRouter from "./routes/multerRoutes";
+import postRouter from "./routes/postRoutes";
+import swaggerSpec from "./swagger";
 
 const initApp = async () => {
   const app = express();
@@ -34,7 +35,7 @@ const initApp = async () => {
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);
-  app.use("/uploads", express.static("public/uploads"));
+  app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
 
   return app;
 };

@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { FileRequest } from "../types/request";
 import { unlink } from "fs/promises";
+import { UPLOADS_ROUTE } from "../consts";
 
 export const getImgUrl = (req: FileRequest, res: Response) => {
   const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
@@ -8,7 +9,7 @@ export const getImgUrl = (req: FileRequest, res: Response) => {
   console.log("req.file.path:", req.file?.path);
 
   const parts = req.file?.path.split("\\") ?? [];
-  const imgUrl = base + "uploads/" + parts[parts.length - 1];
+  const imgUrl = base + `${UPLOADS_ROUTE}/` + parts[parts.length - 1];
 
   console.log("router.post(/file: " + imgUrl);
 
