@@ -113,6 +113,38 @@ describe("with post creation", () => {
       expect(response.status).toBe(400);
     });
   });
+
+  describe("Edit post", () => {
+    it("should edit a post", async () => {
+      const postToEdit = await postModel.findOne({
+        description: POSTS[0].description,
+      });
+      const descriptionUpdate = POSTS[0].description + " - updated";
+      const imgUrlUpdate = POSTS[0].imgUrl.replace(".jpg", "_updated.jpg");
+
+      const postUpdate: Omit<PostInput, "creationDate"> = {
+        description: descriptionUpdate,
+        imgUrl: imgUrlUpdate,
+      };
+
+      const response = await request(app)
+        .put(`/post/${postToEdit?._id}`)
+        .send(postUpdate);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject(postUpdate);
+    });
+
+    it("should return 404 when trying to edit a non-existing post", async () => {
+      const nonExistingPostId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .put(`/post/${nonExistingPostId}`)
+        .send(POSTS[0]);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+      expect(response.status).toBe(404);
+    });
+  });
 });
 
 afterAll(async () => {
