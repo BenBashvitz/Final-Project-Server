@@ -9,7 +9,9 @@ import type {UserInput} from "../types/user";
 import {Response} from 'supertest';
 import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 
-export const setupMultipleUsersForTests = async (app: Express): Promise<{userTokens: Tokens[], userIds: string[]}> => {
+type UserIdsAndToken = {userTokens: Tokens[], userIds: string[]}
+
+export const setupMultipleUsersForTests = async (app: Express): Promise<UserIdsAndToken> => {
     await userModel.deleteMany();
 
     const userTokens: Tokens[] = await Promise.all(USERS.map(user => getUserToken(app, user)));

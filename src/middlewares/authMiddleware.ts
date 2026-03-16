@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { AuthRequest } from "../types/request";
 import type {TokenPayload} from "../types/token";
 import {accessTokenCookieName} from "../consts";
+import env from '../env'
 
 export const authMiddleware = (
   req: AuthRequest,
@@ -10,7 +11,7 @@ export const authMiddleware = (
   next: NextFunction,
 ) => {
   const accessToken = req.cookies[accessTokenCookieName];
-  const jwtSecret = process.env.JWT_SECRET;
+  const jwtSecret = env.JWT_SECRET;
 
   if (!jwtSecret) {
     return res.status(500).send("JWT configuration error.");

@@ -5,13 +5,14 @@ import userModel from "../models/userModel";
 import type {TokenPayload, Tokens} from "../types/token";
 import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
-import type {DefaultSchemaOptions, Document, ResolveSchemaOptions, Types} from 'mongoose';
-import type {RawUser, User} from "../types/user";
-import {jwtExpirationTimeInSeconds, refreshJwtExpirationTimeInSeconds} from "../utils";
-
-const jwtExpirationTimeInMS = () => jwtExpirationTimeInSeconds() * 1000
-
-const refreshJwtExpirationTimeInMS = () => refreshJwtExpirationTimeInSeconds() * 1000
+import type {UserDocument} from "../types/user";
+import {
+    jwtExpirationTimeInMS,
+    jwtExpirationTimeInSeconds,
+    refreshJwtExpirationTimeInMS,
+    refreshJwtExpirationTimeInSeconds
+} from "../utils";
+import env from '../env';
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
     res.cookie(accessTokenCookieName, tokens.accessToken, {
@@ -29,7 +30,7 @@ const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean)
 }
 
 const generateTokens = (userId: string): Tokens => {
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = env.JWT_SECRET;
 
     if (!jwtSecret) {
         throw new Error("JWT configuration error.");
@@ -46,17 +47,7 @@ const generateTokens = (userId: string): Tokens => {
     return {accessToken, refreshToken};
 };
 
-const saveTokensAndSendResponse = async (user: Document<unknown, {}, RawUser, {
-    id: string
-}, ResolveSchemaOptions<DefaultSchemaOptions>> & Omit<Omit<User, "_id"> & {
-    _id: Types.ObjectId
-} & Required<{
-    _id: Types.ObjectId
-}> & {
-    __v: number
-}, "id"> & {
-    id: string
-}, res: Response, status: number) => {
+const saveTokensAndSendResponse = async (user: UserDocument, res: Response, status: number) => {
     const tokens = generateTokens(user._id.toString());
 
     user.refreshTokens.push(tokens.refreshToken);
@@ -122,7 +113,7 @@ const login = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
     const oldRefreshToken = req.cookies[refreshTokenCookieName] ?? '';
-    const jwtSecret = process.env.JWT_SECRET ?? "";
+    const jwtSecret = env.JWT_SECRET ?? "";
 
     if (!oldRefreshToken) {
         return res.status(400).send(ResponseErrorMessage.MISSING_REFRESH_TOKEN);

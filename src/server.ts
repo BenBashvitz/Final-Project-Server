@@ -1,6 +1,7 @@
 import initApp from "./index";
+import env from './env'
 
-const PORT = process.env.PORT;
+const PORT = env.PORT;
 
 initApp().then((app) => {
   app.listen(PORT, (error) => {

@@ -1,5 +1,9 @@
-import {DEFAULT_JWT_EXPIRATION_TIME_SECONDS, DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS} from "./consts";
+import env from './env';
 
-export const jwtExpirationTimeInSeconds = () => process.env.JWT_EXPIRATION_TIME_SECONDS ? +process.env.JWT_EXPIRATION_TIME_SECONDS : DEFAULT_JWT_EXPIRATION_TIME_SECONDS
+export const jwtExpirationTimeInSeconds = () => env.JWT_EXPIRATION_TIME_SECONDS
 
-export const refreshJwtExpirationTimeInSeconds = () => process.env.REFRESH_JWT_EXPIRATION_TIME_SECONDS ? +process.env.REFRESH_JWT_EXPIRATION_TIME_SECONDS : DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS
+export const refreshJwtExpirationTimeInSeconds = () => env.REFRESH_JWT_EXPIRATION_TIME_SECONDS
+
+export const jwtExpirationTimeInMS = () => jwtExpirationTimeInSeconds() * 1000
+
+export const refreshJwtExpirationTimeInMS = () => refreshJwtExpirationTimeInSeconds() * 1000
