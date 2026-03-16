@@ -39,6 +39,22 @@ const router = express.Router();
  *                       type: string
  *                       format: date-time
  *                       description: Creation date of the last post in the current page, used as a reference for fetching the next page.
+ *       400:
+ *        description: Bad request, invalid cursor format
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                cursor:
+ *                  errors: []
+ *                  properties:
+ *                    _id:
+ *                      errors:
+ *                        - Invalid input: expected string, received undefined
+ *
  *       500:
  *         description: Internal server error
  *         content:
