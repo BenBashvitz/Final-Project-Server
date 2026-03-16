@@ -1,7 +1,7 @@
 import { Request } from "express";
 import type { User } from "./user";
 
-export type AuthRequest = Request & { user?: Pick<User, "_id"> };
+export type AuthRequest = Request & { user: Pick<User, "_id"> };
 
 export enum ResponseErrorMessage {
   INVALID_LOGIN_CREDENTIALS = "Invalid username or password.",
