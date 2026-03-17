@@ -180,6 +180,7 @@ describe("with post creation", () => {
       expect(response.body).toMatchObject<LikeResponse>({
         _id: post._id.toString(),
         likeCount: 1,
+        isLikedByCurrentUser: true,
       });
     });
 

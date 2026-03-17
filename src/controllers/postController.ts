@@ -9,7 +9,6 @@ import {
   PostIdParamSchema,
   UpdatePostBodySchema,
 } from "../schemas/post";
-import type { LikeResponse } from "../types/like";
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
@@ -216,30 +215,40 @@ class PostController extends BaseController<RawPost> {
       const { id } = PostIdParamSchema.parse(req.params);
       const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
 
+      const post = await postModel.findById(id);
+
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
+
       const like = await likeModel.create({ postId: id, userId });
 
-      const likeUpdate: LikeResponse | null = await postModel.findByIdAndUpdate(
-        like.postId,
-        {
-          $inc: { likeCount: 1 },
-        },
-        { new: true, projection: { _id: 1, likeCount: 1 } },
-      );
+      const likeUpdate =
+        (
+          await postModel.findByIdAndUpdate(
+            like.postId,
+            {
+              $inc: { likeCount: 1 },
+            },
+            { new: true, projection: { _id: 1, likeCount: 1 } },
+          )
+        )?.toObject() ?? null;
 
-      res.status(200).send(likeUpdate);
+      if (!likeUpdate) {
+        return res.status(404).send(`The post was not found`);
+      }
+
+      res.status(200).send({ ...likeUpdate, isLikedByCurrentUser: true });
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).send(z.treeifyError(error));
       }
 
-      console.error(
-        `An error occurred while getting the current post page: `,
-        error,
-      );
+      console.error(`An error occurred while adding like to the post: `, error);
 
       return res
         .status(500)
-        .send(`An error occurred while getting the current post page`);
+        .send(`An error occurred while adding like to the post`);
     }
   }
 }

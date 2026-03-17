@@ -222,6 +222,54 @@ router.put("/:id", postController.put.bind(postController));
  */
 router.delete("/:id", postController.delete.bind(postController));
 
+/**
+ * @swagger
+ * /post/{id}/like:
+ *   post:
+ *     summary: Like a post
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Post was liked successfully
+ *         content:
+ *           application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *               _id:
+ *                 type: string
+ *                 description: The ID of the liked post
+ *               likeCount:
+ *                 type: integer
+ *                 description: The total number of likes for the post after the like action
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/:id/like", postController.like.bind(postController));
 
 export default router;
