@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { Model } from "mongoose";
+import { PostIdParamsSchema } from "../schemas/post";
+import z, { ZodError } from "zod";
 
 class BaseController<T> {
   model: Model<T>;
@@ -13,10 +15,10 @@ class BaseController<T> {
 
     try {
       const insertedData = await this.model.create(dataToInsert);
-      res.status(201).json(insertedData);
+      return res.status(201).json(insertedData);
     } catch (error) {
       console.error("An error occurred while creating data: ", error);
-      res
+      return res
         .status(500)
         .send("An internal error occurred while creating the data.");
     }
@@ -88,9 +90,9 @@ class BaseController<T> {
   }
 
   async delete(req: Request, res: Response) {
-    const { id } = req.params;
-
     try {
+      const { id } = PostIdParamsSchema.parse(req.params);
+
       const deletedData = await this.model.findOneAndDelete(
         { _id: id },
         { projection: { _id: 1 } },
@@ -102,13 +104,12 @@ class BaseController<T> {
         res.status(404).send(`The entity with the id ${id} was not found`);
       }
     } catch (error) {
-      console.error(
-        `An error occurred while deleting data with the id: ${id}`,
-        error,
-      );
-      res
-        .status(500)
-        .send(`An error occurred while deleting data with the id: ${id}`);
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
+      console.error(`An error occurred while deleting data`, error);
+      res.status(500).send(`An error occurred while deleting data`);
     }
   }
 }

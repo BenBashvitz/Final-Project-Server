@@ -2,6 +2,25 @@
 GET http://localhost:3000/post?cursor=%7B%22_id%22%3A%2269ac73dc154e16bb4baeca04%22%2C%22creationDate%22%3A%222026-03-09T16%3A55%3A00.000Z%22%7D
 
 ###
+POST http://localhost:3000/post
+Content-Type: application/json
+
+{
+  "description": "This is a new post created for testing purposes.",
+  "imgUrl": "https://example.com/image.jpg",
+  "creationDate": "2024-06-01T12:00:00.000Z"
+}
+
+###
+PUT http://localhost:3000/post/69b9bf1593f88323f587e671
+Content-Type: application/json
+
+{
+  "description": "This is an updated description for the post.",
+  "imgUrl": "https://example.com/updated-image.jpg"
+}
+
+###
 DELETE  http://localhost:3000/post/69b1fb3ab7f14990434f251c
 
 ###
@@ -9,3 +28,5 @@ POST http://localhost:3000/like/69ac73dc154e16bb4baeca0a
 
 ###
 POST http://localhost:3000/like/unlike/69ac73dc154e16bb4baeca0a
+
+
