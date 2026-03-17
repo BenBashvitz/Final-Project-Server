@@ -39,6 +39,21 @@ const router = express.Router();
  *                       type: string
  *                       format: date-time
  *                       description: Creation date of the last post in the current page, used as a reference for fetching the next page.
+ *       400:
+ *        description: Bad request, invalid cursor format
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                cursor:
+ *                  errors: []
+ *                  properties:
+ *                    _id:
+ *                      errors: ["Invalid input. expected string, received undefined"]
+ *
  *       500:
  *         description: Internal server error
  *         content:
@@ -80,11 +95,16 @@ router.get("/", postController.getAll.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Post'
  *       400:
- *         description: Bad request - Invalid input
+ *         description: Bad request - Invalid post input
  *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                description:
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
@@ -136,11 +156,16 @@ router.post("/", postController.post.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Post'
  *       400:
- *         description: Bad request - Invalid input
+ *         description: Bad request - Invalid post input
  *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                description:
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
@@ -196,11 +221,16 @@ router.put("/:id", postController.put.bind(postController));
  *                 description: The ID of the deleted post
  *                 example: 60f7c2b8d2f5a2b1c8e4a123
  *       400:
- *         description: Bad request - Invalid post ID
+ *         description: Bad request - Invalid post input
  *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                id:
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:

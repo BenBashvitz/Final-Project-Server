@@ -5,12 +5,13 @@ import config from "../configs/envVar";
 import postModel from "../models/postModel";
 import {
   GetAllPostsQueryParams,
+  PostInputSchema,
   UpdatePostBody,
   PostParams,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
-import BaseController from "./baseController";
 import { AuthRequest } from "../types/request";
+import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -127,28 +128,36 @@ class PostController extends BaseController<RawPost> {
   }
 
   override async post(req: AuthRequest, res: Response) {
-    // const userId = req.user?._id;
-    const userId = "69ac63d7aa7e528360e63264";
-
-    req.body.userId = userId;
-
-    const currentUserId = new mongoose.Types.ObjectId(userId);
-
     try {
-      const inserted = await this.model.create(req.body);
+      // const userId = req.user?._id;
+      const postInput = PostInputSchema.parse(req.body);
+
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+
+      const inserted = await this.model.create({
+        ...postInput,
+        userId: currentUserId,
+      });
 
       const [enrichedPost] = await this.model.aggregate<Post>([
         { $match: { _id: inserted._id } },
         ...this.getEnrichmentPipeline(currentUserId),
       ]);
 
-      res.status(201).json(enrichedPost);
+      return res.status(201).json(enrichedPost);
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
       console.error(
         `An error occurred while creating the following post ${req.body}: `,
         error,
       );
-      res
+
+      return res
         .status(500)
         .send(
           `An error occurred while creating the following post: ${req.body}`,
@@ -159,16 +168,13 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     // const userId = req.user?._id;
 
-    const { id } = PostParams.parse(req.params);
-    const postUpdate = UpdatePostBody.parse(req.body);
-
-    const userId = "69ac63d7aa7e528360e63264";
-
-    req.body.userId = userId;
-
-    const currentUserId = new mongoose.Types.ObjectId(userId);
-
     try {
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+      const { id } = PostParams.parse(req.params);
+      const postUpdate = UpdatePostBody.parse(req.body);
+
       const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
         new: true,
         runValidators: true,
@@ -185,6 +191,10 @@ class PostController extends BaseController<RawPost> {
 
       return res.status(200).json(enrichedPost);
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
       console.error(
         `An error occurred while updating the following post ${req.body}: `,
         error,

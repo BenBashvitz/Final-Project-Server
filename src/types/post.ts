@@ -16,10 +16,6 @@ export type RawPost = {
   creationDate: Date;
 };
 
-export type PostFilters = {
-  cursor?: string;
-};
-
 export type Post = Omit<RawPost, "userId"> & {
   user: PostUser;
   isLikedByCurrentUser: boolean;

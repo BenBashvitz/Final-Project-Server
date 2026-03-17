@@ -53,7 +53,7 @@ describe("Create post", () => {
       .send(incompletePost)
       .set("Authorization", `Bearer ${userTokens.token}`);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
   });
 });
 
@@ -123,9 +123,6 @@ describe("with post creation", () => {
 
   describe("Edit post", () => {
     it("should edit a post", async () => {
-      const postToEdit = await postModel.findOne({
-        description: POSTS[0].description,
-      });
       const descriptionUpdate = POSTS[0].description + " - updated";
       const imgUrlUpdate = POSTS[0].imgUrl.replace(".jpg", "_updated.jpg");
 
@@ -135,7 +132,7 @@ describe("with post creation", () => {
       };
 
       const response = await request(app)
-        .put(`/post/${postToEdit?._id}`)
+        .put(`/post/${postId}`)
         .send(postUpdate);
       // .set("Authorization", `Bearer ${userTokens.token}`);
 
@@ -150,6 +147,13 @@ describe("with post creation", () => {
         .send(POSTS[0]);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
+    });
+
+    it("should return 400 when trying to edit a post with invalid input", async () => {
+      const response = await request(app)
+        .put(`/post/${postId}`)
+        .send({ imgUrl: "not-a-url" });
+      expect(response.status).toBe(400);
     });
   });
 

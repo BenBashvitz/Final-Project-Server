@@ -16,9 +16,11 @@ const PostIdSchema = z.string().transform((value, ctx) => {
   }
 });
 
+const CreationDateSchema = z.iso.datetime().transform((str) => new Date(str));
+
 const CursorSchema = z.object({
   _id: PostIdSchema,
-  creationDate: z.iso.datetime().transform((str) => new Date(str)),
+  creationDate: CreationDateSchema,
 });
 
 export const GetAllPostsQueryParams = z.object({
@@ -50,4 +52,9 @@ export const PostParams = z.object({
 export const UpdatePostBody = z.object({
   description: z.string(),
   imgUrl: z.string(),
+});
+
+export const PostInputSchema = z.object({
+  ...UpdatePostBody.shape,
+  creationDate: CreationDateSchema,
 });
