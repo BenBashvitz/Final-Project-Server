@@ -13,10 +13,10 @@ class BaseController<T> {
 
     try {
       const insertedData = await this.model.create(dataToInsert);
-      res.status(201).json(insertedData);
+      return res.status(201).json(insertedData);
     } catch (error) {
       console.error("An error occurred while creating data: ", error);
-      res
+      return res
         .status(500)
         .send("An internal error occurred while creating the data.");
     }
