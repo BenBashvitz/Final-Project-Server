@@ -6,7 +6,7 @@ import postModel from "../models/postModel";
 import {
   GetAllPostsQueryParams,
   UpdatePostBody,
-  UpdatePostParams,
+  PostParams,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
 import BaseController from "./baseController";
@@ -159,7 +159,7 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     // const userId = req.user?._id;
 
-    const { id } = UpdatePostParams.parse(req.params);
+    const { id } = PostParams.parse(req.params);
     const postUpdate = UpdatePostBody.parse(req.body);
 
     const userId = "69ac63d7aa7e528360e63264";

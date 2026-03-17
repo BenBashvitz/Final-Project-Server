@@ -43,7 +43,7 @@ export const GetAllPostsQueryParams = z.object({
     .pipe(CursorSchema.optional()),
 });
 
-export const UpdatePostParams = z.object({
+export const PostParams = z.object({
   id: PostIdSchema,
 });
 

@@ -167,6 +167,13 @@ describe("with post creation", () => {
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
     });
+
+    it("should return 400 when trying to delete with an invalid post ID", async () => {
+      const invalidPostId = "invalid-id";
+      const response = await request(app).delete(`/post/${invalidPostId}`);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+      expect(response.status).toBe(400);
+    });
   });
 });
 

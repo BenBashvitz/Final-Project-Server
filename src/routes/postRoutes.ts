@@ -195,6 +195,12 @@ router.put("/:id", postController.put.bind(postController));
  *                 type: string
  *                 description: The ID of the deleted post
  *                 example: 60f7c2b8d2f5a2b1c8e4a123
+ *       400:
+ *         description: Bad request - Invalid post ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
