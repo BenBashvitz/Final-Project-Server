@@ -1,2 +1,11 @@
 ###
 GET http://localhost:3000/post?cursor=%7B%22_id%22%3A%2269ac73dc154e16bb4baeca04%22%2C%22creationDate%22%3A%222026-03-09T16%3A55%3A00.000Z%22%7D
+
+###
+POST http://localhost:3000/post
+Content-Type: application/json
+
+{
+  "description": "This is a new post created for testing purposes.",
+  "imageUrl": "https://example.com/image.jpg"
+}

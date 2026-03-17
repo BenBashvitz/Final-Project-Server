@@ -53,7 +53,7 @@ describe("Create post", () => {
       .send(incompletePost)
       .set("Authorization", `Bearer ${userTokens.token}`);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
   });
 });
 

@@ -40,3 +40,8 @@ export const GetAllPostsQueryParams = z.object({
     })
     .pipe(CursorSchema.optional()),
 });
+
+export const PostInputSchema = z.object({
+  description: z.string(),
+  imgUrl: z.string(),
+});
