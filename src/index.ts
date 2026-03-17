@@ -2,6 +2,12 @@
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import swaggerUi from "swagger-ui-express";
+import authRouter from "./routes/authRoutes";
+import swaggerSpec from "./swagger";
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import config from './config'
 
 dotenv.config({ path: ".env.dev" });
 
@@ -9,11 +15,13 @@ const initApp = async () => {
   const app = express();
   app.use(express.json());
 
-  const dbUrl = process.env.MONGODB_URL;
+  app.use(cors({
+    origin: config.CLIENT_URL,
+    credentials: true
+  }));
+  app.use(cookieParser())
 
-  if (!dbUrl) {
-    throw new Error("Not defined db url");
-  }
+  const dbUrl = config.MONGODB_URL;
 
   await mongoose.connect(dbUrl);
 
@@ -26,6 +34,9 @@ const initApp = async () => {
   db.once("open", () => {
     console.log("Connected to MongoDB");
   });
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/auth", authRouter);
 
   return app;
 };
