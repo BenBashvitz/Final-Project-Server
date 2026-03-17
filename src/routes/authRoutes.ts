@@ -118,11 +118,17 @@ router.post("/login", authController.login);
  *       200:
  *         description: Token refreshed successfully
  *       400:
- *         description: Bad Request - No refresh token
+ *         description: Bad request - Invalid input
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 username:
+ *                   errors:
+ *                     - Invalid input: expected refreshToken, received undefined
  *       401:
  *         description: Unauthorized - Invalid refresh token
  *         content:
