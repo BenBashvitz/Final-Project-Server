@@ -106,7 +106,7 @@ router.get("/", postController.getAll.bind(postController));
  *              errors: []
  *              properties:
  *                description:
- *                  errors: [Invalid input: expected string, received undefined]
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
