@@ -35,6 +35,54 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         Error: {
           type: "string",
+          description: "An error message",
+          example: "An error occurred",
+        },
+        ZodTreeError: {
+          type: "object",
+          required: ["errors"],
+          description:
+              "Validation error object returned by z.treeifyError, with nested property errors.",
+          properties: {
+            errors: {
+              type: "array",
+              description: "Validation errors for the current object level.",
+              items: {
+                type: "string",
+              },
+              example: [],
+            },
+            properties: {
+              type: "object",
+              description: "Nested validation errors keyed by property name.",
+              additionalProperties: {
+                $ref: "#/components/schemas/ZodTreeError",
+              },
+            },
+            items: {
+              type: "array",
+              description:
+                  "Nested validation errors for array items when the validated value is an array.",
+              items: {
+                $ref: "#/components/schemas/ZodTreeError",
+              },
+            },
+          },
+          example: {
+            errors: [],
+            properties: {
+              cursor: {
+                errors: [],
+                properties: {
+                  _id: {
+                    errors: [
+                      "Invalid input: expected string, received undefined",
+                    ],
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },

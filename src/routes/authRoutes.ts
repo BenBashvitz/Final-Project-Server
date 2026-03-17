@@ -38,7 +38,13 @@ const router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 email:
+ *                   errors:
+ *                     - Invalid input: expected email, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -84,7 +90,13 @@ router.post("/register", authController.register);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 username:
+ *                   errors:
+ *                     - Invalid input: expected username, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:

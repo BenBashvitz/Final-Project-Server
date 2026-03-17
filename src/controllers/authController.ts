@@ -7,7 +7,7 @@ import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
 import type {UserDocument} from "../types/user";
 import config from '../config';
-import {LoginSchema, RegisterSchema} from "../schemas/auth";
+import {LoginSchema, RefreshTokenSchema, RegisterSchema} from "../schemas/auth";
 import z, {ZodError} from "zod";
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
@@ -104,14 +104,11 @@ const login = async (req: Request, res: Response) => {
 };
 
 const refreshToken = async (req: Request, res: Response) => {
-    const oldRefreshToken = req.cookies[refreshTokenCookieName] ?? '';
-    const jwtSecret = config.JWT_SECRET;
-
-    if (!oldRefreshToken) {
-        return res.status(400).send(ResponseErrorMessage.MISSING_REFRESH_TOKEN);
-    }
-
     try {
+        const {refreshToken: oldRefreshToken} = RefreshTokenSchema.parse(req.cookies);
+
+        const jwtSecret = config.JWT_SECRET;
+
         const decodedRefreshToken = jwt.verify(
             oldRefreshToken,
             jwtSecret
@@ -136,6 +133,10 @@ const refreshToken = async (req: Request, res: Response) => {
 
         return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
+        if (error instanceof ZodError) {
+            return res.status(400).send(z.treeifyError(error));
+        }
+
         console.error("Refresh token error: ", error);
         return res.status(401).send(ResponseErrorMessage.INVALID_REFRESH_TOKEN);
     }

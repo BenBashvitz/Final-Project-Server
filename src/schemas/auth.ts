@@ -1,12 +1,16 @@
 import z from "zod";
-
-export const RegisterSchema = z.object({
-    username: z.string(),
-    password: z.string(),
-    email: z.email(),
-});
+import {refreshTokenCookieName} from "../consts";
 
 export const LoginSchema = z.object({
     username: z.string(),
     password: z.string(),
 });
+
+export const RegisterSchema = z.object({
+    ...LoginSchema.shape,
+    email: z.email(),
+});
+
+export const RefreshTokenSchema = z.object({
+    [refreshTokenCookieName]: z.jwt(),
+})
