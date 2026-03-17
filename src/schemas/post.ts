@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import z from "zod";
 
+const CreationDateSchema = z.iso.datetime().transform((str) => new Date(str));
+
 const CursorSchema = z.object({
   _id: z.string().transform((value, ctx) => {
     try {
@@ -16,7 +18,7 @@ const CursorSchema = z.object({
       return z.NEVER;
     }
   }),
-  creationDate: z.iso.datetime().transform((str) => new Date(str)),
+  creationDate: CreationDateSchema,
 });
 
 export const GetAllPostsQueryParams = z.object({
@@ -44,4 +46,5 @@ export const GetAllPostsQueryParams = z.object({
 export const PostInputSchema = z.object({
   description: z.string(),
   imgUrl: z.string(),
+  creationDate: CreationDateSchema,
 });

@@ -144,11 +144,6 @@ class PostController extends BaseController<RawPost> {
       return res.status(201).json(enrichedPost);
     } catch (error) {
       if (error instanceof ZodError) {
-        console.log(
-          `Validation error while parsing query parameters: `,
-          z.treeifyError(error),
-        );
-
         return res.status(400).send(z.treeifyError(error));
       }
 
