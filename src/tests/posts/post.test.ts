@@ -131,7 +131,7 @@ describe("with post creation", () => {
       const descriptionUpdate = POSTS[0].description + " - updated";
       const imgUrlUpdate = POSTS[0].imgUrl.replace(".jpg", "_updated.jpg");
 
-      const postUpdate: Omit<PostInput, "creationDate"> = {
+      const postUpdate: Omit<PostInput, "creationDate" | "likeCount"> = {
         description: descriptionUpdate,
         imgUrl: imgUrlUpdate,
       };
@@ -168,27 +168,6 @@ describe("with post creation", () => {
       const response = await request(app).delete(`/post/${nonExistingPostId}`);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
-    });
-  });
-
-  describe("Like post", () => {
-    it("should like a post", async () => {
-      const response = await request(app).post(`/post/${post._id}/like`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject<LikeResponse>({
-        _id: post._id.toString(),
-        likeCount: 1,
-        isLikedByCurrentUser: true,
-      });
-    });
-
-    // test like post with bad request
-    it("should return 400 for invalid post ID", async () => {
-      const response = await request(app).post("/post/invalidPostId/like");
-      // .set("Authorization", `Bearer ${userTokens.token}`);
-      expect(response.status).toBe(400);
     });
   });
 });

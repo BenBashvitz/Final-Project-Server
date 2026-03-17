@@ -17,10 +17,12 @@ const postSchema = new mongoose.Schema<RawPost>({
   likeCount: {
     type: Number,
     default: 0,
+    min: 0,
   },
   commentCount: {
     type: Number,
     default: 0,
+    min: 0,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
