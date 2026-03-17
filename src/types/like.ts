@@ -5,3 +5,8 @@ export type Like = {
   postId: Types.ObjectId;
   userId: Types.ObjectId;
 };
+
+export type LikeResponse = {
+  _id: string;
+  likeCount: number;
+};

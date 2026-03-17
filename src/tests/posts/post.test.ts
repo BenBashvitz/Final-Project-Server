@@ -11,6 +11,8 @@ import { USERS } from "../consts";
 import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
+import { RawPost } from "../../types/post";
+import type { LikeResponse } from "../../types/like";
 
 let app: Express;
 let userTokens: Tokens;
@@ -58,7 +60,7 @@ describe("Create post", () => {
 });
 
 describe("with post creation", () => {
-  let postId: string;
+  let post: RawPost;
 
   beforeEach(async () => {
     const postToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
@@ -68,7 +70,7 @@ describe("with post creation", () => {
 
     const createdPosts = await postModel.create(postToInsert);
 
-    postId = createdPosts[0]._id.toString();
+    post = createdPosts[0].toObject();
   });
 
   describe("Get posts", () => {
@@ -155,10 +157,10 @@ describe("with post creation", () => {
 
   describe("Delete post", () => {
     it("should delete a post", async () => {
-      const response = await request(app).delete(`/post/${postId}`);
+      const response = await request(app).delete(`/post/${post._id}`);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({ _id: postId });
+      expect(response.body).toMatchObject({ _id: post._id.toString() });
     });
 
     it("should return 404 when trying to delete a non-existing post", async () => {
@@ -166,6 +168,26 @@ describe("with post creation", () => {
       const response = await request(app).delete(`/post/${nonExistingPostId}`);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
+    });
+  });
+
+  describe("Like post", () => {
+    it("should like a post", async () => {
+      const response = await request(app).post(`/post/${post._id}/like`);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject<LikeResponse>({
+        _id: post._id.toString(),
+        likeCount: 1,
+      });
+    });
+
+    // test like post with bad request
+    it("should return 400 for invalid post ID", async () => {
+      const response = await request(app).post("/post/invalidPostId/like");
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+      expect(response.status).toBe(400);
     });
   });
 });

@@ -2,15 +2,17 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../configs/envVar";
+import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
 import {
-  GetAllPostsQueryParams,
-  UpdatePostBody,
-  UpdatePostParams,
+  GetAllPostsQueryParamsSchema,
+  PostIdParamSchema,
+  UpdatePostBodySchema,
 } from "../schemas/post";
+import type { LikeResponse } from "../types/like";
 import { Post, PostPage, RawPost } from "../types/post";
-import BaseController from "./baseController";
 import { AuthRequest } from "../types/request";
+import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -62,7 +64,7 @@ class PostController extends BaseController<RawPost> {
 
   override async getAll(req: Request, res: Response) {
     try {
-      const { cursor } = GetAllPostsQueryParams.parse(req.query);
+      const { cursor } = GetAllPostsQueryParamsSchema.parse(req.query);
 
       const currentUserId = new mongoose.Types.ObjectId(
         "69ac63d7aa7e528360e63264",
@@ -159,8 +161,8 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     // const userId = req.user?._id;
 
-    const { id } = UpdatePostParams.parse(req.params);
-    const postUpdate = UpdatePostBody.parse(req.body);
+    const { id } = PostIdParamSchema.parse(req.params);
+    const postUpdate = UpdatePostBodySchema.parse(req.body);
 
     const userId = "69ac63d7aa7e528360e63264";
 
@@ -207,6 +209,38 @@ class PostController extends BaseController<RawPost> {
     // }
 
     return super.delete(req, res);
+  }
+
+  async like(req: AuthRequest, res: Response) {
+    try {
+      const { id } = PostIdParamSchema.parse(req.params);
+      const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
+
+      const like = await likeModel.create({ postId: id, userId });
+
+      const likeUpdate: LikeResponse | null = await postModel.findByIdAndUpdate(
+        like.postId,
+        {
+          $inc: { likeCount: 1 },
+        },
+        { new: true, projection: { _id: 1, likeCount: 1 } },
+      );
+
+      res.status(200).send(likeUpdate);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
+      console.error(
+        `An error occurred while getting the current post page: `,
+        error,
+      );
+
+      return res
+        .status(500)
+        .send(`An error occurred while getting the current post page`);
+    }
   }
 }
 

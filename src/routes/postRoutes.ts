@@ -222,4 +222,6 @@ router.put("/:id", postController.put.bind(postController));
  */
 router.delete("/:id", postController.delete.bind(postController));
 
+router.post("/:id/like", postController.like.bind(postController));
+
 export default router;
