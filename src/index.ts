@@ -7,7 +7,7 @@ import authRouter from "./routes/authRoutes";
 import swaggerSpec from "./swagger";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import env from './env'
+import config from './config'
 
 dotenv.config({ path: ".env.dev" });
 
@@ -16,12 +16,12 @@ const initApp = async () => {
   app.use(express.json());
 
   app.use(cors({
-    origin: env.CLIENT_URL,
+    origin: config.CLIENT_URL,
     credentials: true
   }));
   app.use(cookieParser())
 
-  const dbUrl = env.MONGODB_URL;
+  const dbUrl = config.MONGODB_URL;
 
   if (!dbUrl) {
     throw new Error("Not defined db url");

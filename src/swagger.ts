@@ -1,6 +1,6 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import dotenv from "dotenv";
-import env from './env';
+import config from './config';
 
 dotenv.config({ path: ".env.dev" });
 
@@ -15,7 +15,7 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: `${env.SERVER_URL}:${env.PORT}`,
+        url: `${config.SERVER_URL}:${config.PORT}`,
         description: "Development server",
       },
     ],

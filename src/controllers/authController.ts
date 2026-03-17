@@ -6,23 +6,21 @@ import type {TokenPayload, Tokens} from "../types/token";
 import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
 import type {UserDocument} from "../types/user";
-import {
-    jwtExpirationTimeInMS,
-    jwtExpirationTimeInSeconds,
-    refreshJwtExpirationTimeInMS,
-    refreshJwtExpirationTimeInSeconds
-} from "../utils";
-import env from '../env';
+import config from '../config';
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
+    const jwtExpirationTimeInMS = config.JWT_EXPIRATION_TIME_SECONDS * 1000
+
     res.cookie(accessTokenCookieName, tokens.accessToken, {
-        maxAge: invalidate ? 0 : jwtExpirationTimeInMS(),
+        maxAge: invalidate ? 0 : jwtExpirationTimeInMS,
         httpOnly: true,
         sameSite: 'strict',
         secure: true
     })
+    const refreshJwtExpirationTimeInMS = config.REFRESH_JWT_EXPIRATION_TIME_SECONDS * 1000
+
     res.cookie(refreshTokenCookieName, tokens.refreshToken, {
-        maxAge: invalidate ? 0 : refreshJwtExpirationTimeInMS(),
+        maxAge: invalidate ? 0 : refreshJwtExpirationTimeInMS,
         httpOnly: true,
         sameSite: 'strict',
         secure: true,
@@ -30,18 +28,18 @@ const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean)
 }
 
 const generateTokens = (userId: string): Tokens => {
-    const jwtSecret = env.JWT_SECRET;
+    const jwtSecret = config.JWT_SECRET;
 
     if (!jwtSecret) {
         throw new Error("JWT configuration error.");
     }
 
     const accessToken = jwt.sign({userId}, jwtSecret, {
-        expiresIn: jwtExpirationTimeInSeconds(),
+        expiresIn: config.JWT_EXPIRATION_TIME_SECONDS,
     });
 
     const refreshToken = jwt.sign({userId}, jwtSecret, {
-        expiresIn: refreshJwtExpirationTimeInSeconds(),
+        expiresIn: config.REFRESH_JWT_EXPIRATION_TIME_SECONDS,
     });
 
     return {accessToken, refreshToken};
@@ -113,7 +111,7 @@ const login = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
     const oldRefreshToken = req.cookies[refreshTokenCookieName] ?? '';
-    const jwtSecret = env.JWT_SECRET ?? "";
+    const jwtSecret = config.JWT_SECRET ?? "";
 
     if (!oldRefreshToken) {
         return res.status(400).send(ResponseErrorMessage.MISSING_REFRESH_TOKEN);
