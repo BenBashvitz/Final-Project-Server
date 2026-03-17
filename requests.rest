@@ -7,5 +7,6 @@ Content-Type: application/json
 
 {
   "description": "This is a new post created for testing purposes.",
-  "imageUrl": "https://example.com/image.jpg"
+  "imgUrl": "https://example.com/image.jpg",
+  "creationDate": "2024-06-01T12:00:00.000Z"
 }
