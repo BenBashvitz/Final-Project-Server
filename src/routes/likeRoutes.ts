@@ -5,10 +5,10 @@ const router = express.Router();
 
 /**
  * @swagger
- * /post/{id}/like:
+ * /like/{id}:
  *   post:
  *     summary: Like a post
- *     tags: [Posts]
+ *     tags: [Likes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -23,21 +23,24 @@ const router = express.Router();
  *         description: Post was liked successfully
  *         content:
  *           application/json:
- *            schema:
- *              type: object
- *              properties:
- *               _id:
- *                 type: string
- *                 description: The ID of the liked post
- *               likeCount:
- *                 type: integer
- *                 description: The total number of likes for the post after the like action
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The ID of the liked post
+ *                 likeCount:
+ *                   type: integer
+ *                   description: The total number of likes for the post after the like action
+ *                 isLikedByCurrentUser:
+ *                   type: boolean
+ *                   description: Indicates if the post is liked by the current user
  *       400:
  *         description: Bad request - Invalid post ID
  *         content:
  *           application/json:
- *           schema:
- *             $ref: '#/components/schemas/Error'
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
@@ -61,10 +64,10 @@ router.post("/:id", likeController.like);
 
 /**
  * @swagger
- * /post/{id}/unlike:
+ * /like/unlike/{id}:
  *   post:
  *     summary: Unlike a post
- *     tags: [Posts]
+ *     tags: [Likes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -79,21 +82,24 @@ router.post("/:id", likeController.like);
  *         description: Post was unliked successfully
  *         content:
  *           application/json:
- *            schema:
- *              type: object
- *              properties:
- *               _id:
- *                 type: string
- *                 description: The ID of the unliked post
- *               likeCount:
- *                 type: integer
- *                 description: The total number of likes for the post after the unlike action
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The ID of the unliked post
+ *                 likeCount:
+ *                   type: integer
+ *                   description: The total number of likes for the post after the unlike action
+ *                 isLikedByCurrentUser:
+ *                   type: boolean
+ *                   description: Indicates if the post is liked by the current user
  *       400:
  *         description: Bad request - Invalid post ID
  *         content:
  *           application/json:
- *           schema:
- *             $ref: '#/components/schemas/Error'
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:
