@@ -13,12 +13,8 @@ export const authMiddleware = (
   const accessToken = req.cookies[accessTokenCookieName];
   const jwtSecret = config.JWT_SECRET;
 
-  if (!jwtSecret) {
-    return res.status(500).send("JWT configuration error.");
-  }
-
   if (!accessToken) {
-    return res.status(401).json("Unauthorized");
+    return res.status(401).send("Unauthorized");
   }
 
   try {
@@ -28,6 +24,6 @@ export const authMiddleware = (
 
     next();
   } catch {
-    return res.status(401).json("Unauthorized");
+    return res.status(401).send("Unauthorized");
   }
 };

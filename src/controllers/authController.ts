@@ -30,10 +30,6 @@ const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean)
 const generateTokens = (userId: string): Tokens => {
     const jwtSecret = config.JWT_SECRET;
 
-    if (!jwtSecret) {
-        throw new Error("JWT configuration error.");
-    }
-
     const accessToken = jwt.sign({userId}, jwtSecret, {
         expiresIn: config.JWT_EXPIRATION_TIME_SECONDS,
     });
