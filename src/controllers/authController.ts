@@ -7,6 +7,8 @@ import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
 import type {UserDocument} from "../types/user";
 import config from '../config';
+import {LoginSchema, RegisterSchema} from "../schemas/auth";
+import z, {ZodError} from "zod";
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
     const jwtExpirationTimeInMS = config.JWT_EXPIRATION_TIME_SECONDS * 1000
@@ -53,22 +55,20 @@ const saveTokensAndSendResponse = async (user: UserDocument, res: Response, stat
 }
 
 const register = async (req: Request, res: Response) => {
-    const {email, password, username} = req.body;
-
-    if (!email || !password || !username) {
-        return res
-            .status(400)
-            .send(ResponseErrorMessage.MISSING_REGISTER_CREDENTIALS);
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     try {
+        const {username, password, email} = RegisterSchema.parse(req.body);
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
         const user = await userModel.create({email, password: hashedPassword, username});
 
         return saveTokensAndSendResponse(user, res, 201)
     } catch (error) {
+        if (error instanceof ZodError) {
+            return res.status(400).send(z.treeifyError(error));
+        }
+
         console.error("Register error: ", error);
 
         return res.status(500).send("Error creating user.");
@@ -76,15 +76,9 @@ const register = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-    const {username, password} = req.body;
-
-    if (!username || !password) {
-        return res
-            .status(400)
-            .send(ResponseErrorMessage.MISSING_LOGIN_CREDENTIALS);
-    }
-
     try {
+        const {username, password} = LoginSchema.parse(req.body);
+
         const user = await userModel.findOne({username});
 
         if (!user) {
@@ -99,6 +93,10 @@ const login = async (req: Request, res: Response) => {
 
         return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
+        if (error instanceof ZodError) {
+            return res.status(400).send(z.treeifyError(error));
+        }
+
         console.error("Login error: ", error);
 
         return res.status(500).send("Error logging in.");
@@ -107,7 +105,7 @@ const login = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
     const oldRefreshToken = req.cookies[refreshTokenCookieName] ?? '';
-    const jwtSecret = config.JWT_SECRET ?? "";
+    const jwtSecret = config.JWT_SECRET;
 
     if (!oldRefreshToken) {
         return res.status(400).send(ResponseErrorMessage.MISSING_REFRESH_TOKEN);

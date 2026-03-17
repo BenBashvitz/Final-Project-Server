@@ -23,10 +23,6 @@ const initApp = async () => {
 
   const dbUrl = config.MONGODB_URL;
 
-  if (!dbUrl) {
-    throw new Error("Not defined db url");
-  }
-
   await mongoose.connect(dbUrl);
 
   const db = mongoose.connection;
