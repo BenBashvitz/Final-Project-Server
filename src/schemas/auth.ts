@@ -1,5 +1,5 @@
 import z from "zod";
-import {refreshTokenCookieName} from "../consts";
+import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 
 export const LoginSchema = z.object({
     username: z.string(),
@@ -13,4 +13,8 @@ export const RegisterSchema = z.object({
 
 export const RefreshTokenSchema = z.object({
     [refreshTokenCookieName]: z.jwt(),
+});
+
+export const AuthMiddlewareSchema = z.object({
+    [accessTokenCookieName]: z.jwt(),
 })

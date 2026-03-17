@@ -96,7 +96,7 @@ router.post("/register", authController.register);
  *               properties:
  *                 username:
  *                   errors:
- *                     - Invalid input: expected username, received undefined
+ *                     - Invalid input: expected string, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -126,9 +126,9 @@ router.post("/login", authController.login);
  *             example:
  *               errors: []
  *               properties:
- *                 username:
+ *                 refreshToken:
  *                   errors:
- *                     - Invalid input: expected refreshToken, received undefined
+ *                     - Invalid input: expected jwt, received undefined
  *       401:
  *         description: Unauthorized - Invalid refresh token
  *         content:
@@ -155,6 +155,24 @@ router.post("/refresh-token", authController.refreshToken);
  *     responses:
  *       200:
  *         description: Logged out successfully
+ *       400:
+ *         description: Bad request - Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 accessToken:
+ *                   errors:
+ *                     - Invalid input: expected jwt, received undefined
+ *       401:
+ *         description: Unauthorized - Invalid access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal Server Error
  *         content:
