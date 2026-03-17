@@ -52,8 +52,7 @@ const router = express.Router();
  *                  errors: []
  *                  properties:
  *                    _id:
- *                      errors:
- *                        - Invalid input: expected string, received undefined
+ *                      errors: ["Invalid input. expected string, received undefined"]
  *
  *       500:
  *         description: Internal server error
