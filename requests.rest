@@ -10,3 +10,12 @@ Content-Type: application/json
   "imgUrl": "https://example.com/image.jpg",
   "creationDate": "2024-06-01T12:00:00.000Z"
 }
+
+###
+PUT http://localhost:3000/post/69b9bf1593f88323f587e671
+Content-Type: application/json
+
+{
+  "description": "This is an updated description for the post.",
+  "imgUrl": "https://example.com/updated-image.jpg"
+}

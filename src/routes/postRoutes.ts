@@ -156,11 +156,16 @@ router.post("/", postController.post.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Post'
  *       400:
- *         description: Bad request - Invalid input
+ *         description: Bad request - Invalid post input
  *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                description:
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:

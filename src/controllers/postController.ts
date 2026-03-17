@@ -168,16 +168,13 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     // const userId = req.user?._id;
 
-    const { id } = UpdatePostParams.parse(req.params);
-    const postUpdate = UpdatePostBody.parse(req.body);
-
-    const userId = "69ac63d7aa7e528360e63264";
-
-    req.body.userId = userId;
-
-    const currentUserId = new mongoose.Types.ObjectId(userId);
-
     try {
+      const currentUserId = new mongoose.Types.ObjectId(
+        "69ac63d7aa7e528360e63264",
+      );
+      const { id } = UpdatePostParams.parse(req.params);
+      const postUpdate = UpdatePostBody.parse(req.body);
+
       const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
         new: true,
         runValidators: true,
@@ -194,6 +191,10 @@ class PostController extends BaseController<RawPost> {
 
       return res.status(200).json(enrichedPost);
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
       console.error(
         `An error occurred while updating the following post ${req.body}: `,
         error,

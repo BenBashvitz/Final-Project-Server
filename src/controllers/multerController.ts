@@ -27,11 +27,11 @@ export const deleteOldImg = async (
 
     next();
   } catch (error) {
-    if (error instanceof ZodError) {
-      if (req.file?.path) {
-        await unlink(req.file.path);
-      }
+    if (req.file?.path) {
+      await unlink(req.file.path);
+    }
 
+    if (error instanceof ZodError) {
       return res.status(400).send(z.treeifyError(error));
     }
 
