@@ -1,2 +1,5 @@
 ###
 GET http://localhost:3000/post?cursor=%7B%22_id%22%3A%2269ac73dc154e16bb4baeca04%22%2C%22creationDate%22%3A%222026-03-09T16%3A55%3A00.000Z%22%7D
+
+###
+DELETE  http://localhost:3000/post/69b1fb3ab7f14990434f251c

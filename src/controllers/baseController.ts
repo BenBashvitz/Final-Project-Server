@@ -91,12 +91,13 @@ class BaseController<T> {
     const { id } = req.params;
 
     try {
-      const deletedData = await this.model.findByIdAndDelete(id);
+      const deletedData = await this.model.findOneAndDelete(
+        { _id: id },
+        { projection: { _id: 1 } },
+      );
 
       if (deletedData) {
-        res
-          .status(200)
-          .json({ message: "Entity deleted successfully", data: deletedData });
+        res.status(200).json(deletedData);
       } else {
         res.status(404).send(`The entity with the id ${id} was not found`);
       }

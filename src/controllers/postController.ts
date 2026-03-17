@@ -197,6 +197,17 @@ class PostController extends BaseController<RawPost> {
         );
     }
   }
+
+  override async delete(req: AuthRequest, res: Response) {
+    // const userId = req.user?._id;
+    // const post = await postModel.findById(req.params.id);
+
+    // if (post?.userId.toString() !== userId) {
+    //   res.status(403).send("You are not authorized to delete this post");
+    // }
+
+    return super.delete(req, res);
+  }
 }
 
 export default new PostController();

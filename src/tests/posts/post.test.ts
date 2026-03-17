@@ -58,13 +58,17 @@ describe("Create post", () => {
 });
 
 describe("with post creation", () => {
+  let postId: string;
+
   beforeEach(async () => {
     const postToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
       ...post,
       userId,
     }));
 
-    await postModel.create(postToInsert);
+    const createdPosts = await postModel.create(postToInsert);
+
+    postId = createdPosts[0]._id.toString();
   });
 
   describe("Get posts", () => {
@@ -144,6 +148,22 @@ describe("with post creation", () => {
       const response = await request(app)
         .put(`/post/${nonExistingPostId}`)
         .send(POSTS[0]);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("Delete post", () => {
+    it("should delete a post", async () => {
+      const response = await request(app).delete(`/post/${postId}`);
+      // .set("Authorization", `Bearer ${userTokens.token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({ _id: postId });
+    });
+
+    it("should return 404 when trying to delete a non-existing post", async () => {
+      const nonExistingPostId = new mongoose.Types.ObjectId();
+      const response = await request(app).delete(`/post/${nonExistingPostId}`);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
     });
