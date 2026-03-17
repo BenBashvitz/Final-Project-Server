@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
-import { PostIdParamSchema } from "../schemas/post";
+import { PostIdParamsSchema } from "../schemas/post";
 import { AuthRequest } from "../types/request";
 
 const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
@@ -19,7 +19,7 @@ const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
 
 const like = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = PostIdParamSchema.parse(req.params);
+    const { id } = PostIdParamsSchema.parse(req.params);
     const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
 
     const post = await postModel.findById(id);
@@ -52,7 +52,7 @@ const like = async (req: AuthRequest, res: Response) => {
 
 const unlike = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = PostIdParamSchema.parse(req.params);
+    const { id } = PostIdParamsSchema.parse(req.params);
     const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
 
     const response = await likeModel.deleteOne({ postId: id, userId });

@@ -5,14 +5,13 @@ import request from "supertest";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
+import { RawPost } from "../../types/post";
 import { TokenPayload, Tokens } from "../../types/token";
 import testConfig from "../config";
 import { USERS } from "../consts";
 import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
-import { RawPost } from "../../types/post";
-import type { LikeResponse } from "../../types/like";
 
 let app: Express;
 let userTokens: Tokens;
@@ -60,7 +59,7 @@ describe("Create post", () => {
 });
 
 describe("with post creation", () => {
-  let post: RawPost;
+  let postId: string;
 
   beforeEach(async () => {
     const postToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
@@ -70,7 +69,7 @@ describe("with post creation", () => {
 
     const createdPosts = await postModel.create(postToInsert);
 
-    post = createdPosts[0].toObject();
+    postId = createdPosts[0].toObject()._id.toString();
   });
 
   describe("Get posts", () => {
@@ -161,10 +160,10 @@ describe("with post creation", () => {
 
   describe("Delete post", () => {
     it("should delete a post", async () => {
-      const response = await request(app).delete(`/post/${post._id}`);
+      const response = await request(app).delete(`/post/${postId}`);
       // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({ _id: post._id.toString() });
+      expect(response.body).toMatchObject({ _id: postId });
     });
 
     it("should return 404 when trying to delete a non-existing post", async () => {
