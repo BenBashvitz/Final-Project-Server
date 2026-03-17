@@ -4,9 +4,8 @@ import type { User } from "./user";
 export type AuthRequest = Request & { user?: Pick<User, "_id"> };
 
 export enum ResponseErrorMessage {
-  INVALID_LOGIN_CREDENTIALS = "Invalid username or password.",
-  MISSING_LOGIN_CREDENTIALS = "Username and password are required.",
-  MISSING_REGISTER_CREDENTIALS = "Email, username and password are required.",
+  INVALID_LOGIN_CREDENTIALS = "The username or password are incorrect.",
   INVALID_REFRESH_TOKEN = "Invalid refresh token.",
-  MISSING_REFRESH_TOKEN = "Refresh token is required.",
+  CREDENTIALS_ALREADY_TAKEN = "The username or email are already taken.",
+  ERROR_REGISTERING_USER = "There was an error registering the user.",
 }
