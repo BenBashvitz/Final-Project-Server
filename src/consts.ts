@@ -3,3 +3,5 @@ export const DEFAULT_REFRESH_JWT_EXPIRATION_TIME_SECONDS = 86400;
 export const DEFAULT_POSTS_PAGE_SIZE = 10;
 export const INVALID_CURSOR_ERROR_MESSAGE = "Invalid cursor format";
 export const UPLOADS_ROUTE = "uploads";
+export const refreshTokenCookieName = "refreshToken" as const;
+export const accessTokenCookieName = "accessToken" as const;
