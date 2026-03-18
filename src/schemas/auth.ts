@@ -15,6 +15,6 @@ export const RefreshTokenSchema = z.object({
     [refreshTokenCookieName]: z.jwt(),
 });
 
-export const AuthMiddlewareSchema = z.object({
+export const AccessTokenSchema = z.object({
     [accessTokenCookieName]: z.jwt(),
 })

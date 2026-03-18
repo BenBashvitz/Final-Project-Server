@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import {AuthRequest} from "../types/request";
 import type {TokenPayload} from "../types/token";
 import config from '../config';
-import {AuthMiddlewareSchema} from "../schemas/auth";
+import {AccessTokenSchema} from "../schemas/auth";
 import z, {ZodError} from "zod";
 
 export const authMiddleware = (
@@ -12,7 +12,7 @@ export const authMiddleware = (
     next: NextFunction,
 ) => {
     try {
-        const {accessToken} = AuthMiddlewareSchema.parse(req.cookies)
+        const {accessToken} = AccessTokenSchema.parse(req.cookies)
         const jwtSecret = config.JWT_SECRET;
 
         if (!accessToken) {
