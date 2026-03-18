@@ -11,6 +11,7 @@ import { USERS } from "../consts";
 import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
+import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 
 let app: Express;
 let userTokens: Tokens;
@@ -35,7 +36,10 @@ describe("Create post", () => {
     for (const post of POSTS) {
       const response = await request(app)
         .post("/post")
-        // .set("Authorization", `Bearer ${userTokens.token}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(post);
 
       expect(response.statusCode).toBe(201);
@@ -51,7 +55,10 @@ describe("Create post", () => {
     const response = await request(app)
       .post("/post")
       .send(incompletePost)
-      .set("Authorization", `Bearer ${userTokens.token}`);
+      .set("Cookie", [
+        `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+        `${accessTokenCookieName}=${userTokens.accessToken}`,
+      ]);
 
     expect(response.status).toBe(400);
   });

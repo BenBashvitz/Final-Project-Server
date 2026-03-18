@@ -124,12 +124,10 @@ class PostController extends BaseController<RawPost> {
 
   override async post(req: AuthRequest, res: Response) {
     try {
-      // const userId = req.user?._id;
+      const userId = req.user?._id;
       const postInput = PostInputSchema.parse(req.body);
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const currentUserId = new mongoose.Types.ObjectId(userId);
 
       const inserted = await this.model.create({
         ...postInput,
