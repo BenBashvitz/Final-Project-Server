@@ -22,7 +22,7 @@ beforeAll(async () => {
   await userModel.deleteMany();
 
   userTokens = await getUserToken(app, USERS[0]);
-  userId = (jwt.decode(userTokens.token) as TokenPayload).userId;
+  userId = (jwt.decode(userTokens.accessToken) as TokenPayload).userId;
 });
 
 describe("with post creation", () => {
