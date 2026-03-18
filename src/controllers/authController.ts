@@ -158,7 +158,7 @@ const logout = async (req: AuthRequest, res: Response) => {
         res.status(200).send();
     } catch (error) {
         console.error("Logout error: ", error);
-        return res.status(500).send("Error logging out.");
+        return res.status(500).send(ResponseErrorMessage.ERROR_LOGGING_OUT);
     }
 };
 

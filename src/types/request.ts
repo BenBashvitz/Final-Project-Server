@@ -8,4 +8,5 @@ export enum ResponseErrorMessage {
   INVALID_REFRESH_TOKEN = "Invalid refresh token.",
   CREDENTIALS_ALREADY_TAKEN = "The username or email are already taken.",
   ERROR_REGISTERING_USER = "There was an error registering the user.",
+  ERROR_LOGGING_OUT = "There was an error logging out.",
 }
