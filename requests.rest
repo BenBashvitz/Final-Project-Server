@@ -1,2 +1,31 @@
 ###
 GET http://localhost:3000/post?cursor=%7B%22_id%22%3A%2269ac73dc154e16bb4baeca04%22%2C%22creationDate%22%3A%222026-03-09T16%3A55%3A00.000Z%22%7D
+
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "email": "newuser@example.com",
+    "username": "newuser",
+    "password": "newpassword"
+}
+
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "newuser@example.com",
+    "password": "newpassword"
+}
+
+###
+POST http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTlhMDA2M2M3M2I0NWIxOGNlNzQwMWUiLCJpYXQiOjE3NzE3MDE1NjEsImV4cCI6MTc3MTc4Nzk2MX0.nuRQr0QiChim3bgUIIDnlxsrRdu1NTjw3FXubOZhwog; Path=/; HttpOnly; Secure; SameSite=Strict
+
+
+###
+POST http://localhost:3000/auth/logout
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTlhMDA2M2M3M2I0NWIxOGNlNzQwMWUiLCJpYXQiOjE3NzE3MDE1NjEsImV4cCI6MTc3MTc4Nzk2MX0.nuRQr0QiChim3bgUIIDnlxsrRdu1NTjw3FXubOZhwog; Path=/; HttpOnly; Secure; SameSite=Strict

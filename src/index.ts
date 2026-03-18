@@ -1,12 +1,13 @@
 // Noam-Shimoni-213785298-Ben-Bashvitz-324228139
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
+import config from "./config";
 import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
-import cors from "cors";
-import config from "./config";
 
 const initApp = async () => {
   const app = express();
@@ -16,6 +17,14 @@ const initApp = async () => {
       origin: config.CLIENT_URL,
     }),
   );
+
+  app.use(
+    cors({
+      origin: config.CLIENT_URL,
+      credentials: true,
+    }),
+  );
+  app.use(cookieParser());
 
   await mongoose.connect(config.MONGODB_URL);
 
@@ -33,6 +42,7 @@ const initApp = async () => {
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
   app.use("/uploads", express.static("public/uploads"));
+  app.use("/auth", authRouter);
 
   return app;
 };

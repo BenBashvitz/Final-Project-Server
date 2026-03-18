@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema<RawUser>({
   username: {
     type: String,
     required: true,
+    unique: true,
   },
   imgUrl: {
     type: String,
@@ -20,6 +21,8 @@ const userSchema = new mongoose.Schema<RawUser>({
   },
   refreshTokens: {
     type: [String],
+    required: true,
+    default: [],
   },
 });
 
