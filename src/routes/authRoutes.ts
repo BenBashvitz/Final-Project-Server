@@ -45,6 +45,12 @@ const router = express.Router();
  *                 email:
  *                   errors:
  *                     - Invalid input: expected email, received undefined
+ *       409:
+ *         description: Duplicate Key Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -117,18 +123,6 @@ router.post("/login", authController.login);
  *     responses:
  *       200:
  *         description: Token refreshed successfully
- *       400:
- *         description: Bad request - Invalid input
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ZodTreeError'
- *             example:
- *               errors: []
- *               properties:
- *                 refreshToken:
- *                   errors:
- *                     - Invalid input: expected jwt, received undefined
  *       401:
  *         description: Unauthorized - Invalid refresh token
  *         content:
@@ -155,18 +149,6 @@ router.post("/refresh-token", authController.refreshToken);
  *     responses:
  *       200:
  *         description: Logged out successfully
- *       400:
- *         description: Bad request - Invalid input
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ZodTreeError'
- *             example:
- *               errors: []
- *               properties:
- *                 accessToken:
- *                   errors:
- *                     - Invalid input: expected jwt, received undefined
  *       401:
  *         description: Unauthorized - Invalid access token
  *         content:

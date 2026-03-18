@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import {AuthRequest} from "../types/request";
 import type {TokenPayload} from "../types/token";
 import config from '../config';
-import {AuthMiddlewareSchema} from "../schemas/auth";
+import {AccessTokenSchema} from "../schemas/auth";
 import z, {ZodError} from "zod";
 
 export const authMiddleware = (
@@ -12,12 +12,8 @@ export const authMiddleware = (
     next: NextFunction,
 ) => {
     try {
-        const {accessToken} = AuthMiddlewareSchema.parse(req.cookies)
+        const {accessToken} = AccessTokenSchema.parse(req.cookies)
         const jwtSecret = config.JWT_SECRET;
-
-        if (!accessToken) {
-            return res.status(401).send("Unauthorized");
-        }
 
         const payload = jwt.verify(accessToken, jwtSecret) as TokenPayload;
 
@@ -26,7 +22,7 @@ export const authMiddleware = (
         next();
     } catch(error) {
         if (error instanceof ZodError) {
-            return res.status(400).send(z.treeifyError(error));
+            return res.status(401).send(z.treeifyError(error));
         }
 
         return res.status(401).send("Unauthorized");

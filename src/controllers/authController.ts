@@ -9,6 +9,7 @@ import type {UserDocument} from "../types/user";
 import config from '../config';
 import {LoginSchema, RefreshTokenSchema, RegisterSchema} from "../schemas/auth";
 import z, {ZodError} from "zod";
+import {MongoServerError} from 'mongodb'
 
 const setTokens = (res: Response, tokens: Partial<Tokens>, invalidate?: boolean) => {
     const jwtExpirationTimeInMS = config.JWT_EXPIRATION_TIME_SECONDS * 1000
@@ -64,14 +65,20 @@ const register = async (req: Request, res: Response) => {
         const user = await userModel.create({email, password: hashedPassword, username});
 
         return saveTokensAndSendResponse(user, res, 201)
-    } catch (error) {
+    } catch (error: unknown) {
         if (error instanceof ZodError) {
             return res.status(400).send(z.treeifyError(error));
         }
 
+        const dupKeyErrorCode = 11000
+
+        if(error instanceof MongoServerError && error.code === dupKeyErrorCode) {
+            return res.status(409).send(ResponseErrorMessage.CREDENTIALS_ALREADY_TAKEN);
+        }
+
         console.error("Register error: ", error);
 
-        return res.status(500).send("Error creating user.");
+        return res.status(500).send(ResponseErrorMessage.ERROR_REGISTERING_USER);
     }
 };
 
@@ -134,7 +141,7 @@ const refreshToken = async (req: Request, res: Response) => {
         return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
         if (error instanceof ZodError) {
-            return res.status(400).send(z.treeifyError(error));
+            return res.status(401).send(z.treeifyError(error));
         }
 
         console.error("Refresh token error: ", error);
@@ -151,7 +158,7 @@ const logout = async (req: AuthRequest, res: Response) => {
         res.status(200).send();
     } catch (error) {
         console.error("Logout error: ", error);
-        return res.status(500).send("Error logging out.");
+        return res.status(500).send(ResponseErrorMessage.ERROR_LOGGING_OUT);
     }
 };
 
