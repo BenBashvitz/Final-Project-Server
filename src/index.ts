@@ -9,6 +9,7 @@ import authRouter from "./routes/authRoutes";
 import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
 import likeRouter from "./routes/likeRoutes";
+import commentRouter from "./routes/commentRoutes";
 import swaggerSpec from "./swagger";
 
 const initApp = async () => {
@@ -34,6 +35,7 @@ const initApp = async () => {
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
+  app.use("/comment", commentRouter);
   app.use("/like", likeRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);

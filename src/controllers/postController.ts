@@ -12,6 +12,7 @@ import {
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -20,16 +21,7 @@ class PostController extends BaseController<RawPost> {
 
   private getEnrichmentPipeline(currentUserId: mongoose.Types.ObjectId) {
     return [
-      {
-        $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "user",
-          pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
-        },
-      },
-      { $unwind: "$user" },
+      ...USER_LOOKUP_PIPELINE_STAGE,
       {
         $lookup: {
           from: "likes",
