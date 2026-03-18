@@ -15,10 +15,6 @@ export const authMiddleware = (
         const {accessToken} = AccessTokenSchema.parse(req.cookies)
         const jwtSecret = config.JWT_SECRET;
 
-        if (!accessToken) {
-            return res.status(401).send("Unauthorized");
-        }
-
         const payload = jwt.verify(accessToken, jwtSecret) as TokenPayload;
 
         req.user = {_id: payload.userId};
@@ -26,7 +22,7 @@ export const authMiddleware = (
         next();
     } catch(error) {
         if (error instanceof ZodError) {
-            return res.status(400).send(z.treeifyError(error));
+            return res.status(401).send(z.treeifyError(error));
         }
 
         return res.status(401).send("Unauthorized");

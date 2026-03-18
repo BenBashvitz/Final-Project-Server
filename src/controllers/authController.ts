@@ -141,7 +141,7 @@ const refreshToken = async (req: Request, res: Response) => {
         return saveTokensAndSendResponse(user, res, 200)
     } catch (error) {
         if (error instanceof ZodError) {
-            return res.status(400).send(z.treeifyError(error));
+            return res.status(401).send(z.treeifyError(error));
         }
 
         console.error("Refresh token error: ", error);
