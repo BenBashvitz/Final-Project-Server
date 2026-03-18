@@ -12,19 +12,13 @@ import swaggerSpec from "./swagger";
 const initApp = async () => {
   const app = express();
   app.use(express.json());
-  app.use(
-    cors({
-      origin: config.CLIENT_URL,
-    }),
-  );
-
+  app.use(cookieParser());
   app.use(
     cors({
       origin: config.CLIENT_URL,
       credentials: true,
     }),
   );
-  app.use(cookieParser());
 
   await mongoose.connect(config.MONGODB_URL);
 
