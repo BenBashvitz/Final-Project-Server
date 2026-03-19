@@ -65,7 +65,12 @@ const saveTokensAndSendResponse = async (
 
   setTokens(res, tokens);
 
-  return res.status(status).send();
+  return res.status(status).send({
+    _id: user._id,
+    email: user.email,
+    username: user.username,
+    imgUrl: user.imgUrl,
+  });
 };
 
 const register = async (req: Request, res: Response) => {
