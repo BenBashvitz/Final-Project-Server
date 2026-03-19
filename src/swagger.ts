@@ -1,8 +1,6 @@
-import swaggerJsdoc from "swagger-jsdoc";
-import dotenv from "dotenv";
 import path from "path";
-
-dotenv.config({ path: ".env.dev" });
+import swaggerJsdoc from "swagger-jsdoc";
+import config from "./configs/envVar";
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -15,16 +13,21 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: `${process.env.SERVER_URL}:${process.env.PORT}`,
+        url: `${config.SERVER_URL}:${config.PORT}`,
         description: "Final Project Server",
       },
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+        accessToken: {
+          type: "apiKey",
+          in: "cookie",
+          name: "accessToken",
+        },
+        refreshToken: {
+          type: "apiKey",
+          in: "cookie",
+          name: "refreshToken",
         },
       },
       schemas: {

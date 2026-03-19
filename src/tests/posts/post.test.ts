@@ -2,16 +2,17 @@ import { Express } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import request from "supertest";
+import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
+import { RawPost } from "../../types/post";
 import { TokenPayload, Tokens } from "../../types/token";
 import testConfig from "../config";
 import { USERS } from "../consts";
 import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
-import { RawPost } from "../../types/post";
 
 let app: Express;
 let userTokens: Tokens;
@@ -24,7 +25,7 @@ beforeAll(async () => {
   await userModel.deleteMany();
 
   userTokens = await getUserToken(app, USERS[0]);
-  userId = (jwt.decode(userTokens.token) as TokenPayload).userId;
+  userId = (jwt.decode(userTokens.accessToken) as TokenPayload).userId;
 });
 
 beforeEach(async () => {
@@ -36,7 +37,10 @@ describe("Create post", () => {
     for (const post of POSTS) {
       const response = await request(app)
         .post("/post")
-        // .set("Authorization", `Bearer ${userTokens.token}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(post);
 
       expect(response.statusCode).toBe(201);
@@ -52,7 +56,10 @@ describe("Create post", () => {
     const response = await request(app)
       .post("/post")
       .send(incompletePost)
-      .set("Authorization", `Bearer ${userTokens.token}`);
+      .set("Cookie", [
+        `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+        `${accessTokenCookieName}=${userTokens.accessToken}`,
+      ]);
 
     expect(response.status).toBe(400);
   });
@@ -134,8 +141,11 @@ describe("with post creation", () => {
 
       const response = await request(app)
         .put(`/post/${post._id}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(postUpdate);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject(postUpdate);
@@ -145,14 +155,21 @@ describe("with post creation", () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/post/${nonExistingPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(POSTS[0]);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
     });
 
     it("should return 400 when trying to edit a post with invalid input", async () => {
       const response = await request(app)
         .put(`/post/${post._id}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send({ imgUrl: "not-a-url" });
       expect(response.status).toBe(400);
     });
