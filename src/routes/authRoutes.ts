@@ -33,12 +33,20 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: User successfully registered
+ *       400:
+ *         description: Bad request - Invalid input
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         description: Bad request - Invalid input
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 email:
+ *                   errors:
+ *                     - Invalid input: expected email, received undefined
+ *       409:
+ *         description: Duplicate Key Error
  *         content:
  *           application/json:
  *             schema:
@@ -65,13 +73,9 @@ router.post("/register", authController.register);
  *           schema:
  *             type: object
  *             required:
- *               - email
  *               - username
  *               - password
  *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
  *               username:
  *                 type: string
  *                 example: newUser
@@ -81,10 +85,6 @@ router.post("/register", authController.register);
  *     responses:
  *       200:
  *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
  *       401:
  *         description: Unauthorized - Invalid credentials
  *         content:
@@ -96,7 +96,13 @@ router.post("/register", authController.register);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 username:
+ *                   errors:
+ *                     - Invalid input: expected string, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -107,67 +113,55 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 
 /**
-* @swagger
-* /auth/refresh-token:
-*   post:
-*     summary: Refresh access token
-*     tags: [Auth]
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             required:
-*               - refreshToken
-*             properties:
-*               refreshToken:
-*                 type: string
-*                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-*     responses:
-*       200:
-*         description: Token refreshed successfully
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/AuthResponse'
-*       401:
-*         description: Unauthorized - Invalid refresh token
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Error'
-*       500:
-*         description: Internal Server Error
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Error'
-*/
+ * @swagger
+ * /auth/refresh-token:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     security:
+ *       - refreshToken: []
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       401:
+ *         description: Unauthorized - Invalid refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/refresh-token", authController.refreshToken);
 
 /**
-* @swagger
-* /auth/logout:
-*   post:
-*     summary: Logout a user
-*     tags: [Auth]
-*     security:
-*       - bearerAuth: []
-*     responses:
-*       200:
-*         description: Logged out successfully
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/AuthResponse'
-*       500:
-*         description: Internal Server Error
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Error'
-*/
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout a user
+ *     tags: [Auth]
+ *     security:
+ *       - accessToken: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       401:
+ *         description: Unauthorized - Invalid access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/logout", authMiddleware, authController.logout);
 
 export default router;

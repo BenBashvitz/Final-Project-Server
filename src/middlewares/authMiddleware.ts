@@ -1,36 +1,30 @@
 import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
-import { AuthRequest, UserReq } from "../types/request";
+import { AuthRequest } from "../types/request";
+import type { TokenPayload } from "../types/token";
+import config from "../configs/envVar";
+import { AccessTokenSchema } from "../schemas/auth";
+import z, { ZodError } from "zod";
 
 export const authMiddleware = (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
-  const authorizationHeader = req.headers.authorization;
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    throw new Error("JWT configuration error.");
-  }
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const token = authorizationHeader.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
   try {
-    const payload = jwt.verify(token, jwtSecret) as UserReq;
+    const { accessToken } = AccessTokenSchema.parse(req.cookies);
+    const jwtSecret = config.JWT_SECRET;
+
+    const payload = jwt.verify(accessToken, jwtSecret) as TokenPayload;
 
     req.user = { _id: payload.userId };
 
     next();
-  } catch {
-    return res.status(401).json({ error: "Unauthorized" });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(401).send(z.treeifyError(error));
+    }
+
+    return res.status(401).send("Unauthorized");
   }
 };
