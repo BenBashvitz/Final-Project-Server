@@ -1,5 +1,5 @@
 {
-  "name": "firstassignment",
+  "name": "finalproject",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -12,10 +12,12 @@
     "test": "jest --detectOpenHandles --runInBand",
     "test-post": "jest --detectOpenHandles --runInBand src/tests/posts/post.test.ts",
     "test-file": "jest --detectOpenHandles --runInBand src/tests/file/file.test.ts",
-    "test-like": "jest --detectOpenHandles --runInBand src/tests/likes/like.test.ts"
+    "test-like": "jest --detectOpenHandles --runInBand src/tests/likes/like.test.ts",
+    "test-auth": "jest --detectOpenHandles --runInBand src/tests/auth.test.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
@@ -29,6 +31,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",

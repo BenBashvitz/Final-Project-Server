@@ -12,6 +12,8 @@ import {
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { removeFile } from "../utils/removeLocalFile";
+import likeModel from "../models/likeModel";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -129,12 +131,10 @@ class PostController extends BaseController<RawPost> {
 
   override async post(req: AuthRequest, res: Response) {
     try {
-      // const userId = req.user?._id;
+      const userId = req.user?._id;
       const postInput = PostInputSchema.parse(req.body);
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const currentUserId = new mongoose.Types.ObjectId(userId);
 
       const inserted = await this.model.create({
         ...postInput,
@@ -166,13 +166,23 @@ class PostController extends BaseController<RawPost> {
   }
 
   override async put(req: AuthRequest, res: Response) {
-    // const userId = req.user?._id;
-
     try {
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const userId = req.user?._id;
       const { id } = PostIdParamsSchema.parse(req.params);
+
+      const post = await this.model.findById(id);
+
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
+
+      if (post.userId.toString() !== userId) {
+        return res
+          .status(403)
+          .send("You are not authorized to update this post");
+      }
+
+      const currentUserId = new mongoose.Types.ObjectId(userId);
       const postUpdate = UpdatePostBodySchema.parse(req.body);
 
       const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
@@ -200,23 +210,51 @@ class PostController extends BaseController<RawPost> {
         error,
       );
 
-      return res
-        .status(500)
-        .send(
-          `An error occurred while updating the following post: ${req.body}`,
-        );
+      return res.status(500).send(`An error occurred while updating the post`);
     }
   }
 
   override async delete(req: AuthRequest, res: Response) {
-    // const userId = req.user?._id;
-    // const post = await postModel.findById(req.params.id);
+    try {
+      const userId = req.user?._id;
+      const { id } = PostIdParamsSchema.parse(req.params);
 
-    // if (post?.userId.toString() !== userId) {
-    //   res.status(403).send("You are not authorized to delete this post");
-    // }
+      const post = await this.model.findById(id);
 
-    return super.delete(req, res);
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
+
+      if (post.userId.toString() !== userId) {
+        return res
+          .status(403)
+          .send("You are not authorized to delete this post");
+      }
+
+      const deletedData: Pick<Post, "_id" | "imgUrl"> | null =
+        await this.model.findOneAndDelete(
+          {
+            _id: id,
+          },
+          { projection: { _id: 1, imgUrl: 1 } },
+        );
+
+      if (deletedData) {
+        await removeFile(deletedData.imgUrl);
+        await likeModel.deleteMany({ postId: deletedData._id });
+
+        res.status(200).json({ _id: deletedData._id });
+      } else {
+        res.status(404).send(`The post was not found`);
+      }
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
+      console.error(`An error occurred while deleting post`, error);
+      res.status(500).send(`An error occurred while deleting post`);
+    }
   }
 }
 

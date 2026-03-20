@@ -2,6 +2,7 @@ import { Express } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import request from "supertest";
+import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
@@ -12,6 +13,8 @@ import { USERS } from "../consts";
 import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
+
+jest.mock("../../utils/removeLocalFile");
 
 let app: Express;
 let userTokens: Tokens;
@@ -24,7 +27,7 @@ beforeAll(async () => {
   await userModel.deleteMany();
 
   userTokens = await getUserToken(app, USERS[0]);
-  userId = (jwt.decode(userTokens.token) as TokenPayload).userId;
+  userId = (jwt.decode(userTokens.accessToken) as TokenPayload).userId;
 });
 
 beforeEach(async () => {
@@ -36,7 +39,10 @@ describe("Create post", () => {
     for (const post of POSTS) {
       const response = await request(app)
         .post("/post")
-        // .set("Authorization", `Bearer ${userTokens.token}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(post);
 
       expect(response.statusCode).toBe(201);
@@ -52,7 +58,10 @@ describe("Create post", () => {
     const response = await request(app)
       .post("/post")
       .send(incompletePost)
-      .set("Authorization", `Bearer ${userTokens.token}`);
+      .set("Cookie", [
+        `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+        `${accessTokenCookieName}=${userTokens.accessToken}`,
+      ]);
 
     expect(response.status).toBe(400);
   });
@@ -134,8 +143,11 @@ describe("with post creation", () => {
 
       const response = await request(app)
         .put(`/post/${postId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(postUpdate);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject(postUpdate);
@@ -145,14 +157,21 @@ describe("with post creation", () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/post/${nonExistingPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send(POSTS[0]);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
       expect(response.status).toBe(404);
     });
 
     it("should return 400 when trying to edit a post with invalid input", async () => {
       const response = await request(app)
         .put(`/post/${postId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .send({ imgUrl: "not-a-url" });
       expect(response.status).toBe(400);
     });
@@ -160,23 +179,36 @@ describe("with post creation", () => {
 
   describe("Delete post", () => {
     it("should delete a post", async () => {
-      const response = await request(app).delete(`/post/${postId}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .delete(`/post/${postId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({ _id: postId });
     });
 
     it("should return 404 when trying to delete a non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
-      const response = await request(app).delete(`/post/${nonExistingPostId}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .delete(`/post/${nonExistingPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
+
       expect(response.status).toBe(404);
     });
 
     it("should return 400 when trying to delete with an invalid post ID", async () => {
       const invalidPostId = "invalid-id";
-      const response = await request(app).delete(`/post/${invalidPostId}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .delete(`/post/${invalidPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(400);
     });
   });
