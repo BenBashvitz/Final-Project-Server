@@ -12,6 +12,8 @@ import {
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { removeFile } from "../utils/removeLocalFile";
+import likeModel from "../models/likeModel";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -229,7 +231,22 @@ class PostController extends BaseController<RawPost> {
           .send("You are not authorized to delete this post");
       }
 
-      return super.delete(req, res);
+      const deletedData: Pick<Post, "_id" | "imgUrl"> | null =
+        await this.model.findOneAndDelete(
+          {
+            _id: id,
+          },
+          { projection: { _id: 1, imgUrl: 1 } },
+        );
+
+      if (deletedData) {
+        await removeFile(deletedData.imgUrl);
+        await likeModel.deleteMany({ postId: deletedData._id });
+
+        res.status(200).json({ _id: deletedData._id });
+      } else {
+        res.status(404).send(`The post was not found`);
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).send(z.treeifyError(error));

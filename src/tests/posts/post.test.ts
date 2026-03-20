@@ -13,6 +13,8 @@ import { getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
 
+jest.mock("../../utils/removeLocalFile");
+
 let app: Express;
 let userTokens: Tokens;
 let userId: string;
