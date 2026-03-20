@@ -54,7 +54,12 @@ const router = express.Router();
  *                  properties:
  *                    _id:
  *                      errors: ["Invalid input. expected string, received undefined"]
- *
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal server error
  *         content:
@@ -62,7 +67,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/", postController.getAll.bind(postController));
+router.get("/", authMiddleware, postController.getAll.bind(postController));
 
 /**
  * @swagger
