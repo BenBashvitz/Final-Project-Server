@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../config";
 import postModel from "../models/postModel";
 import { GetAllPostsQueryParams } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
+import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
@@ -12,13 +13,11 @@ class PostController extends BaseController<RawPost> {
     super(postModel);
   }
 
-  override async getAll(req: Request, res: Response) {
+  override async getAll(req: AuthRequest, res: Response) {
     try {
       const { cursor } = GetAllPostsQueryParams.parse(req.query);
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
       const posts = await this.model.aggregate<Post>([
         {
