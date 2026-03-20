@@ -148,16 +148,9 @@ class PostController extends BaseController<RawPost> {
         return res.status(400).send(z.treeifyError(error));
       }
 
-      console.error(
-        `An error occurred while creating the following post ${req.body}: `,
-        error,
-      );
+      console.error(`An error occurred while creating the post: `, error);
 
-      return res
-        .status(500)
-        .send(
-          `An error occurred while creating the following post: ${req.body}`,
-        );
+      return res.status(500).send(`An error occurred while creating the post`);
     }
   }
 
