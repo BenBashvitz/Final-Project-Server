@@ -140,7 +140,7 @@ router.post("/", authMiddleware, postController.post.bind(postController));
  *     summary: Update a post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
