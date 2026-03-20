@@ -76,7 +76,7 @@ router.get("/", authMiddleware, postController.getAll.bind(postController));
  *     summary: Create a new post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     requestBody:
  *       required: true
  *       content:
@@ -86,6 +86,7 @@ router.get("/", authMiddleware, postController.getAll.bind(postController));
  *             required:
  *               - description
  *               - imgUrl
+ *               - creationDate
  *             properties:
  *               description:
  *                 type: string
@@ -93,6 +94,10 @@ router.get("/", authMiddleware, postController.getAll.bind(postController));
  *               imgUrl:
  *                 type: string
  *                 example: https://example.com/image.jpg
+ *               creationDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2024-01-01T00:00:00.000Z
  *     responses:
  *       201:
  *         description: Post created successfully

@@ -2,35 +2,36 @@ import express, { Response } from "express";
 import multer from "multer";
 import { FileRequest } from "../types/request";
 import { UPLOADS_ROUTE } from "../consts";
+import config from "../config";
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: (req, file, cb) => {
     cb(null, "public/uploads");
   },
-  filename: function (req, file, cb) {
-    const ext = file.originalname.split(".").filter(Boolean).slice(1).join(".");
-    cb(null, Date.now() + "." + ext);
+  filename: (req, file, cb) => {
+    const fileExtension = file.originalname.split(".").pop() ?? "jpg";
+    cb(null, `${Date.now()}.${fileExtension}`);
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 router.post(
   "/",
   upload.single("file"),
   function (req: FileRequest, res: Response) {
-    const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
+    if (!req.file) {
+      return res.status(400).send("No file was sent");
+    }
 
-    console.log("req.file.path:", req.file?.path);
+    const base = `${config.SERVER_URL}:${config.PORT}/`;
 
-    const parts = req.file?.path.split("\\") ?? [];
-    const imgUrl = base + `${UPLOADS_ROUTE}/` + parts[parts.length - 1];
+    const imgUrl = `${base}${UPLOADS_ROUTE}/${req.file.filename}`;
 
-    console.log("router.post(/file: " + imgUrl);
     res.status(200).send({ imgUrl });
   },
 );
 
-export = router;
+export default router;
