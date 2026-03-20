@@ -1,5 +1,6 @@
 import express from "express";
 import likeController from "../controllers/likeController";
+import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -60,7 +61,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/:id", likeController.like);
+router.post("/:id", authMiddleware, likeController.like);
 
 /**
  * @swagger
@@ -119,6 +120,6 @@ router.post("/:id", likeController.like);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/unlike/:id", likeController.unlike);
+router.post("/unlike/:id", authMiddleware, likeController.unlike);
 
 export default router;

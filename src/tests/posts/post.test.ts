@@ -6,7 +6,6 @@ import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
-import { RawPost } from "../../types/post";
 import { TokenPayload, Tokens } from "../../types/token";
 import testConfig from "../config";
 import { USERS } from "../consts";
@@ -136,7 +135,7 @@ describe("with post creation", () => {
       const descriptionUpdate = POSTS[0].description + " - updated";
       const imgUrlUpdate = POSTS[0].imgUrl.replace(".jpg", "_updated.jpg");
 
-      const postUpdate: Omit<PostInput, "creationDate" | "likeCount"> = {
+      const postUpdate: Omit<PostInput, "creationDate"> = {
         description: descriptionUpdate,
         imgUrl: imgUrlUpdate,
       };
