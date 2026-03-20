@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../configs/envVar";
@@ -63,13 +63,11 @@ class PostController extends BaseController<RawPost> {
     ];
   }
 
-  override async getAll(req: Request, res: Response) {
+  override async getAll(req: AuthRequest, res: Response) {
     try {
       const { cursor } = GetAllPostsQueryParamsSchema.parse(req.query);
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
       const posts = await this.model.aggregate<Post>([
         {

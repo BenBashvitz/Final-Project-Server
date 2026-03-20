@@ -89,7 +89,12 @@ describe("with post creation", () => {
         },
       };
 
-      const firstPostPageResponse = await request(app).get("/post");
+      const firstPostPageResponse = await request(app)
+        .get("/post")
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       const responseBody: TestPostPage = firstPostPageResponse.body;
 
       expect(firstPostPageResponse.status).toBe(200);
@@ -103,6 +108,10 @@ describe("with post creation", () => {
 
       const secondPostPageResponse = await request(app)
         .get(`/post`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .query({
           cursor: JSON.stringify(responseBody.cursor),
         });
@@ -116,6 +125,10 @@ describe("with post creation", () => {
     it("should return 400 for invalid cursor - missing _id", async () => {
       const response = await request(app)
         .get("/post")
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
       expect(response.status).toBe(400);
     });
@@ -123,6 +136,10 @@ describe("with post creation", () => {
     it("should return 400 for invalid cursor - missing creationDate", async () => {
       const response = await request(app)
         .get("/post")
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ])
         .query({
           cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
         });
