@@ -9,6 +9,8 @@ const router = express.Router();
  *   get:
  *     summary: Get all posts
  *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
  *     parameters:
  *       - in: query
  *         name: cursor
