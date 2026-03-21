@@ -5,12 +5,16 @@ import { removeFile } from "../utils/removeLocalFile";
 import { DeleteOldImgSchema } from "../schemas/file";
 import z, { ZodError } from "zod";
 import { unlink } from "fs/promises";
+import config from "../configs/envVar";
 
 export const getImgUrl = (req: FileRequest, res: Response) => {
-  const base = process.env.SERVER_URL + ":" + process.env.PORT + "/";
+  if (!req.file) {
+    return res.status(400).send("No file was sent");
+  }
 
-  const parts = req.file?.path.split("\\") ?? [];
-  const imgUrl = base + `${UPLOADS_ROUTE}/` + parts[parts.length - 1];
+  const base = `${config.SERVER_URL}:${config.PORT}/`;
+
+  const imgUrl = `${base}${UPLOADS_ROUTE}/${req.file.filename}`;
 
   res.status(200).send({ imgUrl });
 };

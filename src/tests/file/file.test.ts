@@ -30,6 +30,12 @@ describe("Upload file", () => {
     expect(fileResponse.statusCode).toBe(200);
   });
 
+  it("should return 400 if no file is sent", async () => {
+    const response = await request(app).post("/upload");
+
+    expect(response.statusCode).toBe(400);
+  });
+
   it("should replace an old file with a new one", async () => {
     const filePath = `${__dirname}/${NEW_EXAMPLE_FILE_NAME}`;
 
