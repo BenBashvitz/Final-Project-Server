@@ -213,7 +213,7 @@ router.put("/:id", authMiddleware, postController.put.bind(postController));
  *     summary: Delete a post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
