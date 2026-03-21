@@ -93,10 +93,7 @@ class BaseController<T> {
     try {
       const { id } = PostIdParamsSchema.parse(req.params);
 
-      const deletedData = await this.model.findOneAndDelete(
-        { _id: id },
-        { projection: { _id: 1 } },
-      );
+      const deletedData = await this.model.findByIdAndDelete(id);
 
       if (deletedData) {
         res.status(200).json(deletedData);

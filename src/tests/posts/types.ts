@@ -1,9 +1,6 @@
 import { RawPost } from "../../types/post";
 
-export type PostInput = Pick<
-  RawPost,
-  "description" | "imgUrl" | "likeCount"
-> & {
+export type PostInput = Pick<RawPost, "description" | "imgUrl"> & {
   creationDate: string;
 };
 

@@ -1,5 +1,6 @@
 import express from "express";
 import postController from "../controllers/postController";
+import { authMiddleware } from "../middlewares/authMiddleware";
 const router = express.Router();
 
 /**
@@ -8,6 +9,8 @@ const router = express.Router();
  *   get:
  *     summary: Get all posts
  *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
  *     parameters:
  *       - in: query
  *         name: cursor
@@ -53,7 +56,12 @@ const router = express.Router();
  *                  properties:
  *                    _id:
  *                      errors: ["Invalid input. expected string, received undefined"]
- *
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal server error
  *         content:
@@ -61,7 +69,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/", postController.getAll.bind(postController));
+router.get("/", authMiddleware, postController.getAll.bind(postController));
 
 /**
  * @swagger
@@ -70,7 +78,7 @@ router.get("/", postController.getAll.bind(postController));
  *     summary: Create a new post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     requestBody:
  *       required: true
  *       content:
@@ -80,6 +88,7 @@ router.get("/", postController.getAll.bind(postController));
  *             required:
  *               - description
  *               - imgUrl
+ *               - creationDate
  *             properties:
  *               description:
  *                 type: string
@@ -87,6 +96,10 @@ router.get("/", postController.getAll.bind(postController));
  *               imgUrl:
  *                 type: string
  *                 example: https://example.com/image.jpg
+ *               creationDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2024-01-01T00:00:00.000Z
  *     responses:
  *       201:
  *         description: Post created successfully
@@ -118,7 +131,7 @@ router.get("/", postController.getAll.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/", postController.post.bind(postController));
+router.post("/", authMiddleware, postController.post.bind(postController));
 
 /**
  * @swagger
@@ -127,7 +140,7 @@ router.post("/", postController.post.bind(postController));
  *     summary: Update a post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -191,7 +204,7 @@ router.post("/", postController.post.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put("/:id", postController.put.bind(postController));
+router.put("/:id", authMiddleware, postController.put.bind(postController));
 
 /**
  * @swagger
@@ -256,6 +269,10 @@ router.put("/:id", postController.put.bind(postController));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete("/:id", postController.delete.bind(postController));
+router.delete(
+  "/:id",
+  authMiddleware,
+  postController.delete.bind(postController),
+);
 
 export default router;

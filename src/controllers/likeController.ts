@@ -20,7 +20,7 @@ const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
 const like = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = PostIdParamsSchema.parse(req.params);
-    const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
+    const userId = req.user?._id;
 
     const post = await postModel.findById(id);
 
@@ -53,7 +53,7 @@ const like = async (req: AuthRequest, res: Response) => {
 const unlike = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = PostIdParamsSchema.parse(req.params);
-    const userId = new mongoose.Types.ObjectId("69ac63d7aa7e528360e63264");
+    const userId = req.user?._id;
 
     const response = await likeModel.deleteOne({ postId: id, userId });
 

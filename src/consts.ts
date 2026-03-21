@@ -18,3 +18,5 @@ export const USER_LOOKUP_PIPELINE_STAGE: PipelineStage[] = [
   },
   { $unwind: "$user" },
 ];
+export const refreshTokenCookieName = "refreshToken" as const;
+export const accessTokenCookieName = "accessToken" as const;

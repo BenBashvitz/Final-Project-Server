@@ -13,6 +13,7 @@ import { USERS } from "../consts";
 import { POSTS } from "../posts/consts";
 import type { PostInputWithUserId } from "../posts/types";
 import { getUserToken } from "../utils";
+import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 
 let app: Express;
 let userTokens: Tokens;
@@ -25,7 +26,7 @@ beforeAll(async () => {
   await userModel.deleteMany();
   await likeModel.deleteMany();
   userTokens = await getUserToken(app, USERS[0]);
-  userId = (jwt.decode(userTokens.token) as TokenPayload).userId;
+  userId = (jwt.decode(userTokens.accessToken) as TokenPayload).userId;
 });
 
 beforeEach(async () => {
@@ -49,8 +50,12 @@ describe("with post creation", () => {
 
   describe("Like post", () => {
     it("should like a post", async () => {
-      const response = await request(app).post(`/like/${post._id}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post(`/like/${post._id}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject<LikeResponse>({
@@ -60,17 +65,24 @@ describe("with post creation", () => {
       });
     });
 
-    // test like post with bad request
     it("should return 400 for invalid post ID", async () => {
-      const response = await request(app).post("/like/invalidPostId");
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post("/like/invalidPostId")
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(400);
     });
 
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
-      const response = await request(app).post(`/like/${nonExistingPostId}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post(`/like/${nonExistingPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(404);
     });
   });
@@ -81,8 +93,12 @@ describe("with post creation", () => {
     });
 
     it("should unlike a post", async () => {
-      const response = await request(app).post(`/like/unlike/${post._id}`);
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post(`/like/unlike/${post._id}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject<LikeResponse>({
         _id: post._id.toString(),
@@ -92,17 +108,23 @@ describe("with post creation", () => {
     });
 
     it("should return 400 for invalid post ID", async () => {
-      const response = await request(app).post("/like/unlike/invalidPostId");
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post("/like/unlike/invalidPostId")
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(400);
     });
 
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
-      const response = await request(app).post(
-        `/like/unlike/${nonExistingPostId}`,
-      );
-      // .set("Authorization", `Bearer ${userTokens.token}`);
+      const response = await request(app)
+        .post(`/like/unlike/${nonExistingPostId}`)
+        .set("Cookie", [
+          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+          `${accessTokenCookieName}=${userTokens.accessToken}`,
+        ]);
       expect(response.status).toBe(404);
     });
   });

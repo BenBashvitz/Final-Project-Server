@@ -29,4 +29,31 @@ POST http://localhost:3000/like/69ac73dc154e16bb4baeca0a
 ###
 POST http://localhost:3000/like/unlike/69ac73dc154e16bb4baeca0a
 
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
 
+{
+    "email": "newuser@example.com",
+    "username": "newuser",
+    "password": "newpassword"
+}
+
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "newuser@example.com",
+    "password": "newpassword"
+}
+
+###
+POST http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTlhMDA2M2M3M2I0NWIxOGNlNzQwMWUiLCJpYXQiOjE3NzE3MDE1NjEsImV4cCI6MTc3MTc4Nzk2MX0.nuRQr0QiChim3bgUIIDnlxsrRdu1NTjw3FXubOZhwog; Path=/; HttpOnly; Secure; SameSite=Strict
+
+
+###
+POST http://localhost:3000/auth/logout
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTlhMDA2M2M3M2I0NWIxOGNlNzQwMWUiLCJpYXQiOjE3NzE3MDE1NjEsImV4cCI6MTc3MTc4Nzk2MX0.nuRQr0QiChim3bgUIIDnlxsrRdu1NTjw3FXubOZhwog; Path=/; HttpOnly; Secure; SameSite=Strict
