@@ -4,6 +4,7 @@ import request from "supertest";
 import initApp from "../../index";
 import { removeFile } from "../../utils/removeLocalFile";
 import { EXAMPLE_FILE_NAME, NEW_EXAMPLE_FILE_NAME } from "./consts";
+import { removeBaseUrl } from "./utils";
 
 let app: Express;
 let oldImgUrl: string;
@@ -24,7 +25,7 @@ describe("Upload file", () => {
     expect(response.body).toHaveProperty("imgUrl");
 
     oldImgUrl = response.body.imgUrl;
-    const fileUrl = response.body.imgUrl.replace(/^.*\/\/[^/]+/, "");
+    const fileUrl = removeBaseUrl(response.body.imgUrl);
 
     const fileResponse = await request(app).get(fileUrl);
     expect(fileResponse.statusCode).toBe(200);
@@ -48,7 +49,7 @@ describe("Upload file", () => {
     expect(response.body).toHaveProperty("imgUrl");
 
     newImgUrl = response.body.imgUrl;
-    const fileUrl = response.body.imgUrl.replace(/^.*\/\/[^/]+/, "");
+    const fileUrl = removeBaseUrl(response.body.imgUrl);
 
     const fileResponse = await request(app).get(fileUrl);
     expect(fileResponse.statusCode).toBe(200);
