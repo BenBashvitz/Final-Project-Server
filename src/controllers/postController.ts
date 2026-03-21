@@ -171,24 +171,19 @@ class PostController extends BaseController<RawPost> {
           .send("You are not authorized to update this post");
       }
 
-      const currentUserId = new mongoose.Types.ObjectId(userId);
       const postUpdate = UpdatePostBody.parse(req.body);
 
       const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
         new: true,
         runValidators: true,
+        projection: { _id: 1, description: 1, imgUrl: 1 },
       });
 
       if (!updatedData) {
         return res.status(404).send(`The post was not found`);
       }
 
-      const [enrichedPost] = await this.model.aggregate<Post>([
-        { $match: { _id: updatedData._id } },
-        ...this.getEnrichmentPipeline(currentUserId),
-      ]);
-
-      return res.status(200).json(enrichedPost);
+      return res.status(200).json(updatedData);
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).send(z.treeifyError(error));
