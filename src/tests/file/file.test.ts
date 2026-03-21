@@ -25,6 +25,11 @@ describe("Upload file", () => {
     const fileResponse = await request(app).get(fileUrl);
     expect(fileResponse.statusCode).toBe(200);
   });
+
+  it("should return 400 if no file is sent", async () => {
+    const response = await request(app).post("/upload");
+    expect(response.statusCode).toBe(400);
+  });
 });
 
 afterAll(async () => {
