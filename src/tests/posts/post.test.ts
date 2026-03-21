@@ -2,7 +2,6 @@ import { Express } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import request from "supertest";
-import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
@@ -10,7 +9,7 @@ import { RawPost } from "../../types/post";
 import { TokenPayload, Tokens } from "../../types/token";
 import testConfig from "../config";
 import { USERS } from "../consts";
-import { getUserToken } from "../utils";
+import { getCookieSetters, getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
 
@@ -37,10 +36,7 @@ describe("Create post", () => {
     for (const post of POSTS) {
       const response = await request(app)
         .post("/post")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .send(post);
 
       expect(response.statusCode).toBe(201);
@@ -56,10 +52,7 @@ describe("Create post", () => {
     const response = await request(app)
       .post("/post")
       .send(incompletePost)
-      .set("Cookie", [
-        `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-        `${accessTokenCookieName}=${userTokens.accessToken}`,
-      ]);
+      .set("Cookie", getCookieSetters(userTokens));
 
     expect(response.status).toBe(400);
   });
@@ -90,10 +83,7 @@ describe("with post creation", () => {
 
       const firstPostPageResponse = await request(app)
         .get("/post")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .set("Cookie", getCookieSetters(userTokens));
       const responseBody: TestPostPage = firstPostPageResponse.body;
 
       expect(firstPostPageResponse.status).toBe(200);
@@ -107,10 +97,7 @@ describe("with post creation", () => {
 
       const secondPostPageResponse = await request(app)
         .get(`/post`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .query({
           cursor: JSON.stringify(responseBody.cursor),
         });
@@ -124,10 +111,7 @@ describe("with post creation", () => {
     it("should return 400 for invalid cursor - missing _id", async () => {
       const response = await request(app)
         .get("/post")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
       expect(response.status).toBe(400);
     });
@@ -135,10 +119,7 @@ describe("with post creation", () => {
     it("should return 400 for invalid cursor - missing creationDate", async () => {
       const response = await request(app)
         .get("/post")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .query({
           cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
         });
@@ -158,10 +139,7 @@ describe("with post creation", () => {
 
       const response = await request(app)
         .put(`/post/${post._id}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .send(postUpdate);
 
       expect(response.status).toBe(200);
@@ -172,10 +150,7 @@ describe("with post creation", () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/post/${nonExistingPostId}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .send(POSTS[0]);
       expect(response.status).toBe(404);
     });
@@ -183,10 +158,7 @@ describe("with post creation", () => {
     it("should return 400 when trying to edit a post with invalid input", async () => {
       const response = await request(app)
         .put(`/post/${post._id}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ])
+        .set("Cookie", getCookieSetters(userTokens))
         .send({ imgUrl: "not-a-url" });
       expect(response.status).toBe(400);
     });
