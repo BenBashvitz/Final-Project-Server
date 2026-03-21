@@ -1,6 +1,6 @@
 import express from "express";
 import commentController from "../controllers/commentsController";
-// import { authMiddleware } from "../middlewares/authMiddleware";
+import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -48,7 +48,7 @@ const router = express.Router();
  */
 router.post(
   "/",
-  // authMiddleware,
+  authMiddleware,
   commentController.post.bind(commentController),
 );
 
