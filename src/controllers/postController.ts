@@ -223,7 +223,12 @@ class PostController extends BaseController<RawPost> {
         );
 
       if (deletedData) {
-        await removeFile(deletedData.imgUrl);
+        await removeFile(deletedData.imgUrl).catch((error) => {
+          console.error(
+            `An error occurred while deleting the post image file: `,
+            error,
+          );
+        });
         await likeModel.deleteMany({ postId: deletedData._id });
 
         res.status(200).json({ _id: deletedData._id });
