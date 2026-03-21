@@ -69,3 +69,8 @@ export const expectNoTokens = (response: Response) => {
     `${refreshTokenCookieName}=undefined`,
   );
 };
+
+export const getCookieSetters = (userTokens: Tokens) => [
+  `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+  `${accessTokenCookieName}=${userTokens.accessToken}`,
+];
