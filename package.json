@@ -9,8 +9,8 @@
   "scripts": {
     "start": "tsc && node --env-file=.env.dev dist/server.js",
     "dev": "nodemon src/server.ts",
-    "test": "jest --detectOpenHandles",
-    "test-user": "jest --detectOpenHandles src/tests/user.test.ts",
+    "test": "jest --detectOpenHandles --runInBand",
+    "test-post": "jest --detectOpenHandles --runInBand src/tests/posts/post.test.ts",
     "test-auth": "jest --detectOpenHandles src/tests/auth.test.ts"
   },
   "dependencies": {

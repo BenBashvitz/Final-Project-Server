@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import type { RawUser } from "../types/user";
+import { RawUser } from "../types/user";
 
 const userSchema = new mongoose.Schema<RawUser>({
   email: {
@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema<RawUser>({
     type: String,
     required: true,
     unique: true,
+  },
+  imgUrl: {
+    type: String,
   },
   password: {
     type: String,

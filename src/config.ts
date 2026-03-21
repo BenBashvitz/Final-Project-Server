@@ -15,6 +15,13 @@ const config = z
       .transform(Number),
     CLIENT_URL: z.string(),
     SERVER_URL: z.string(),
+    POSTS_PAGE_SIZE: z
+      .string()
+      .regex(/^\d+$/)
+      .transform(Number)
+      .refine((value) => value > 0, {
+        message: "POSTS_PAGE_SIZE must be a positive number",
+      }),
   })
   .parse(process.env);
 

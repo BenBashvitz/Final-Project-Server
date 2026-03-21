@@ -1,6 +1,7 @@
-import swaggerJsdoc from "swagger-jsdoc";
 import dotenv from "dotenv";
-import config from './config';
+import path from "path";
+import swaggerJsdoc from "swagger-jsdoc";
+import config from "./config";
 
 dotenv.config({ path: ".env.dev" });
 
@@ -16,7 +17,7 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: `${config.SERVER_URL}:${config.PORT}`,
-        description: "Development server",
+        description: "Final Project Server",
       },
     ],
     components: {
@@ -33,6 +34,66 @@ const options: swaggerJsdoc.Options = {
         },
       },
       schemas: {
+        Post: {
+          type: "object",
+          required: [
+            "description",
+            "user",
+            "imgUrl",
+            "likeCount",
+            "commentCount",
+            "creationDate",
+            "isLikedByCurrentUser",
+            "_id",
+          ],
+          properties: {
+            _id: {
+              type: "string",
+              description: "Post ID",
+              example: "697cc87180aa7bb6865a259d",
+            },
+            imgUrl: {
+              type: "string",
+              description: "URL of the post image",
+              example: "https://example.com/image.jpg",
+            },
+            description: {
+              type: "string",
+              description: "The post description",
+              example: "This is the description of my new post.",
+            },
+            user: {
+              type: "object",
+              description: "The user who created the post",
+              example: {
+                _id: "697cc87180aa7bb6865a259d",
+                username: "john_doe",
+                imgUrl: "https://example.com/profile.jpg",
+              },
+            },
+            likeCount: {
+              type: "integer",
+              description: "Number of likes the post has received",
+              example: 5,
+            },
+            commentCount: {
+              type: "integer",
+              description: "Number of comments the post has received",
+              example: 3,
+            },
+            creationDate: {
+              type: "string",
+              format: "date-time",
+              description: "The date and time when the post was created",
+              example: "2024-06-01T12:00:00Z",
+            },
+            isLikedByCurrentUser: {
+              type: "boolean",
+              description: "Indicates if the current user has liked the post",
+              example: true,
+            },
+          },
+        },
         Error: {
           type: "string",
           description: "An error message",
@@ -42,7 +103,7 @@ const options: swaggerJsdoc.Options = {
           type: "object",
           required: ["errors"],
           description:
-              "Validation error object returned by z.treeifyError, with nested property errors.",
+            "Validation error object returned by z.treeifyError, with nested property errors.",
           properties: {
             errors: {
               type: "array",
@@ -62,7 +123,7 @@ const options: swaggerJsdoc.Options = {
             items: {
               type: "array",
               description:
-                  "Nested validation errors for array items when the validated value is an array.",
+                "Nested validation errors for array items when the validated value is an array.",
               items: {
                 $ref: "#/components/schemas/ZodTreeError",
               },
@@ -87,7 +148,7 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ["./src/routes/*.ts"],
+  apis: [path.join(__dirname, "routes/*.{ts,js}")],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

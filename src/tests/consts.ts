@@ -1,4 +1,4 @@
-import type {UserInput} from "../types/user";
+import type { UserInput } from "../types/user";
 
 export const USERS: UserInput[] = [
   {
@@ -12,3 +12,5 @@ export const USERS: UserInput[] = [
     password: "example2Pass",
   },
 ];
+
+export const POST_PAGE_SIZE = Number(process.env.POSTS_PAGE_SIZE);
