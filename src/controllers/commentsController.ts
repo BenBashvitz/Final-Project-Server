@@ -1,5 +1,4 @@
 import { Response } from "express";
-import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import commentModel from "../models/commentModel";
@@ -17,19 +16,15 @@ class CommentsController extends BaseController<Comment> {
     try {
       const commentData = CommentBodySchema.parse(req.body);
 
-      // const userId = req.user?._id;
+      const userId = req.user?._id;
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
-
-      const instertedComment = await this.model.create({
+      const insertedComment = await this.model.create({
         ...commentData,
-        userId: currentUserId,
+        userId,
       });
 
       const [enrichedComment] = await this.model.aggregate<Comment>([
-        { $match: { _id: instertedComment._id } },
+        { $match: { _id: insertedComment._id } },
         ...USER_LOOKUP_PIPELINE_STAGE,
         { $unset: ["userId"] },
       ]);
@@ -40,16 +35,9 @@ class CommentsController extends BaseController<Comment> {
         return res.status(400).send(z.treeifyError(error));
       }
 
-      console.error(
-        `An error occurred while creating the following post ${req.body}: `,
-        error,
-      );
+      console.error(`An error occurred while creating comment: `, error);
 
-      return res
-        .status(500)
-        .send(
-          `An error occurred while creating the following post: ${req.body}`,
-        );
+      return res.status(500).send(`An error occurred while creating comment`);
     }
   }
 }

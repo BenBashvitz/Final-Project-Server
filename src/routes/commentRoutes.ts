@@ -33,6 +33,17 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Bad request - Invalid comment input
+ *         content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                message:
+ *                  errors: ["Invalid input. expected string, received undefined"]
  *       401:
  *         description: Unauthorized - Authentication required
  *         content:

@@ -15,12 +15,10 @@ export const USERS: UserInput[] = [
     email: "example3@example.com",
     username: "example3User",
     password: "example3Pass",
-    refreshTokens: [],
   },
   {
     email: "example4@example.com",
     username: "example4User",
     password: "example4Pass",
-    refreshTokens: [],
   },
 ];
