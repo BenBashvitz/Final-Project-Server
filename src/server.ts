@@ -1,5 +1,5 @@
 import initApp from "./index";
-import config from './config'
+import config from "./configs/envVar";
 
 const PORT = config.PORT;
 

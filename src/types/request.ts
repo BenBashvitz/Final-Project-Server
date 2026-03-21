@@ -2,6 +2,7 @@ import { Request } from "express";
 import type { User } from "./user";
 
 export type AuthRequest = Request & { user?: Pick<User, "_id"> };
+export type FileRequest = Request & { file?: Express.Multer.File };
 
 export enum ResponseErrorMessage {
   INVALID_LOGIN_CREDENTIALS = "The username or password are incorrect.",

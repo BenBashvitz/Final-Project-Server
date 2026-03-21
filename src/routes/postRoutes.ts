@@ -71,4 +71,139 @@ const router = express.Router();
  */
 router.get("/", authMiddleware, postController.getAll.bind(postController));
 
+/**
+ * @swagger
+ * /post:
+ *   post:
+ *     summary: Create a new post
+ *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - description
+ *               - imgUrl
+ *               - creationDate
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 example: This is the description of my new post.
+ *               imgUrl:
+ *                 type: string
+ *                 example: https://example.com/image.jpg
+ *               creationDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2024-01-01T00:00:00.000Z
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request - Invalid post input
+ *         content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                description:
+ *                  errors: ["Invalid input. expected string, received undefined"]
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post("/", authMiddleware, postController.post.bind(postController));
+
+/**
+ * @swagger
+ * /post/{id}:
+ *   put:
+ *     summary: Update a post
+ *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 example: New description
+ *               imgUrl:
+ *                 type: string
+ *                 example: https://example.com/new-image.jpg
+ *     responses:
+ *       200:
+ *         description: Post updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Bad request - Invalid post input
+ *         content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                description:
+ *                  errors: ["Invalid input. expected string, received undefined"]
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - You are not authorized to update this post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.put("/:id", authMiddleware, postController.put.bind(postController));
+
 export default router;

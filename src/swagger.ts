@@ -1,9 +1,6 @@
-import dotenv from "dotenv";
 import path from "path";
 import swaggerJsdoc from "swagger-jsdoc";
-import config from "./config";
-
-dotenv.config({ path: ".env.dev" });
+import config from "./configs/envVar";
 
 const options: swaggerJsdoc.Options = {
   definition: {

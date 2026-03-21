@@ -12,5 +12,3 @@ export const USERS: UserInput[] = [
     password: "example2Pass",
   },
 ];
-
-export const POST_PAGE_SIZE = Number(process.env.POSTS_PAGE_SIZE);

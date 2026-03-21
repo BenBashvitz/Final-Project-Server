@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AuthRequest } from "../types/request";
 import type { TokenPayload } from "../types/token";
-import config from "../config";
+import config from "../configs/envVar";
 import { AccessTokenSchema } from "../schemas/auth";
 import z, { ZodError } from "zod";
 

@@ -1,13 +1,11 @@
 import { Express } from "express";
-import request from "supertest";
-import userModel from "../models/userModel";
-import type { Tokens } from "../types/token";
-import { USERS } from "./consts";
-import type { TokenPayload } from "../types/token";
 import jwt from "jsonwebtoken";
-import type { UserInput } from "../types/user";
-import { Response } from "supertest";
+import request, { Response } from "supertest";
 import { accessTokenCookieName, refreshTokenCookieName } from "../consts";
+import userModel from "../models/userModel";
+import type { TokenPayload, Tokens } from "../types/token";
+import type { UserInput } from "../types/user";
+import { USERS } from "./consts";
 
 type UserIdsAndToken = { userTokens: Tokens[]; userIds: string[] };
 
@@ -71,3 +69,8 @@ export const expectNoTokens = (response: Response) => {
     `${refreshTokenCookieName}=undefined`,
   );
 };
+
+export const getCookieSetters = (userTokens: Tokens) => [
+  `${refreshTokenCookieName}=${userTokens.refreshToken}`,
+  `${accessTokenCookieName}=${userTokens.accessToken}`,
+];

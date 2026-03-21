@@ -4,8 +4,10 @@ import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
-import config from "./config";
+import config from "./configs/envVar";
+import { UPLOADS_ROUTE } from "./consts";
 import authRouter from "./routes/authRoutes";
+import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
 
@@ -35,7 +37,8 @@ const initApp = async () => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
   app.use("/auth", authRouter);
-  app.use("/uploads", express.static("public/uploads"));
+  app.use("/upload", multerRouter);
+  app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
   app.use("/auth", authRouter);
 
   return app;
