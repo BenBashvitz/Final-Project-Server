@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { Model } from "mongoose";
-import { IdParamSchema } from "../schemas/post";
 import z, { ZodError } from "zod";
+import { IdParamSchema } from "../schemas/common";
 
 class BaseController<T> {
   model: Model<T>;

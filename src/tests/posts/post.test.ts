@@ -13,7 +13,9 @@ import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
 import { removeFile } from "../../utils/removeLocalFile";
 
-jest.mock("../../utils/removeLocalFile");
+jest.mock("../../utils/removeLocalFile", () => ({
+  removeFile: jest.fn().mockResolvedValue(undefined),
+}));
 
 let app: Express;
 let userTokens: Tokens;
