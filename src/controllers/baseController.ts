@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose, { Model } from "mongoose";
-import { PostParams } from "../schemas/post";
+import { IdParamSchema } from "../schemas/post";
 import z, { ZodError } from "zod";
 
 class BaseController<T> {
@@ -91,7 +91,7 @@ class BaseController<T> {
 
   async delete(req: Request, res: Response) {
     try {
-      const { id } = PostParams.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const deletedData = await this.model.findByIdAndDelete(id);
 

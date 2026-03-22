@@ -7,7 +7,7 @@ import {
   GetAllPostsQueryParams,
   PostInputSchema,
   UpdatePostBody,
-  PostParams,
+  IdParamSchema,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
@@ -159,7 +159,7 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostParams.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
@@ -200,7 +200,7 @@ class PostController extends BaseController<RawPost> {
   override async delete(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostParams.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
