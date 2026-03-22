@@ -2,18 +2,18 @@ import { Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../configs/envVar";
+import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
+import { IdParamSchema } from "../schemas/common";
 import {
   GetAllPostsQueryParamsSchema,
-  PostIdParamsSchema,
   PostInputSchema,
   UpdatePostBodySchema,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
-import BaseController from "./baseController";
 import { removeFile } from "../utils/removeLocalFile";
-import likeModel from "../models/likeModel";
+import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -159,7 +159,7 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostIdParamsSchema.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
@@ -200,7 +200,7 @@ class PostController extends BaseController<RawPost> {
   override async delete(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostIdParamsSchema.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
