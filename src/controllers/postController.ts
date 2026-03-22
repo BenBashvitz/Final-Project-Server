@@ -7,13 +7,13 @@ import {
   GetAllPostsQueryParams,
   PostInputSchema,
   UpdatePostBody,
-  IdParamSchema,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
 import { removeFile } from "../utils/removeLocalFile";
 import likeModel from "../models/likeModel";
+import { IdParamSchema } from "../schemas/common";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
