@@ -6,6 +6,7 @@ import { CommentBodySchema } from "../schemas/comment";
 import Comment from "../types/comment";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { PostIdParamSchema } from "../schemas/common";
 
 class CommentsController extends BaseController<Comment> {
   constructor() {
@@ -15,12 +16,14 @@ class CommentsController extends BaseController<Comment> {
   override async post(req: AuthRequest, res: Response) {
     try {
       const commentData = CommentBodySchema.parse(req.body);
+      const { postId } = PostIdParamSchema.parse(req.params);
 
       const userId = req.user?._id;
 
       const insertedComment = await this.model.create({
         ...commentData,
         userId,
+        postId,
       });
 
       const [enrichedComment] = await this.model.aggregate<Comment>([

@@ -2,16 +2,25 @@ import express from "express";
 import commentController from "../controllers/commentsController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
-const router = express.Router();
+const router = express.Router({
+  mergeParams: true,
+});
 
 /**
  * @swagger
- * /comment:
+ * /post/{postId}/comment:
  *   post:
  *     summary: Create a new comment
  *     tags: [Comments]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
  *     requestBody:
  *       required: true
  *       content:
@@ -20,12 +29,13 @@ const router = express.Router();
  *             type: object
  *             required:
  *               - message
- *               - postId
+ *               - creationDate
  *             properties:
  *               message:
  *                 type: string
- *               postId:
+ *               creationDate:
  *                 type: string
+ *                 format: date-time
  *     responses:
  *       201:
  *         description: The comment was successfully created

@@ -35,27 +35,22 @@ afterAll(async () => {
 
 describe("Create comment", () => {
   it("should create a comment successfully", async () => {
-    const commentData = {
-      ...COMMENTS[0],
-      postId: postIds[0],
-    };
-
     const response = await request(app)
-      .post("/comment")
+      .post(`/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
-      .send(commentData);
+      .send(COMMENTS[0]);
 
     expect(response.status).toBe(201);
-    expect(response.body).toMatchObject(commentData);
+    expect(response.body).toMatchObject(COMMENTS[0]);
   });
 
   it("should fail to create a comment with missing required fields", async () => {
     const commentData = {
-      message: "Test Comment",
+      message: COMMENTS[0].message,
     };
 
     const response = await request(app)
-      .post("/comment")
+      .post(`/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
       .send(commentData);
 

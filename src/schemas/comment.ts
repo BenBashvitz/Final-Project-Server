@@ -1,8 +1,7 @@
 import z from "zod";
-import { CreationDateSchema, IdSchema } from "./common";
+import { CreationDateSchema } from "./common";
 
 export const CommentBodySchema = z.object({
   message: z.string(),
-  postId: IdSchema,
   creationDate: CreationDateSchema,
 });
