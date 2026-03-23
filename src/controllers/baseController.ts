@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { Model } from "mongoose";
+import z, { ZodError } from "zod";
+import { IdParamSchema } from "../schemas/common";
 
 class BaseController<T> {
   model: Model<T>;
@@ -88,26 +90,23 @@ class BaseController<T> {
   }
 
   async delete(req: Request, res: Response) {
-    const { id } = req.params;
-
     try {
+      const { id } = IdParamSchema.parse(req.params);
+
       const deletedData = await this.model.findByIdAndDelete(id);
 
       if (deletedData) {
-        res
-          .status(200)
-          .json({ message: "Entity deleted successfully", data: deletedData });
+        res.status(200).json(deletedData);
       } else {
         res.status(404).send(`The entity with the id ${id} was not found`);
       }
     } catch (error) {
-      console.error(
-        `An error occurred while deleting data with the id: ${id}`,
-        error,
-      );
-      res
-        .status(500)
-        .send(`An error occurred while deleting data with the id: ${id}`);
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
+      console.error(`An error occurred while deleting data`, error);
+      res.status(500).send(`An error occurred while deleting data`);
     }
   }
 }

@@ -27,7 +27,12 @@ export const deleteOldImg = async (
   try {
     const { oldImgUrl } = DeleteOldImgSchema.parse(req.body);
 
-    await removeFile(oldImgUrl);
+    await removeFile(oldImgUrl).catch((error) => {
+      console.error(
+        `An error occurred while deleting the old post image: `,
+        error,
+      );
+    });
 
     next();
   } catch (error) {

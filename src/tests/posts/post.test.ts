@@ -5,13 +5,17 @@ import request from "supertest";
 import initApp from "../../index";
 import postModel from "../../models/postModel";
 import userModel from "../../models/userModel";
-import { RawPost } from "../../types/post";
 import { TokenPayload, Tokens } from "../../types/token";
 import testConfig from "../config";
 import { USERS } from "../consts";
 import { getCookieSetters, getUserToken } from "../utils";
 import { POSTS } from "./consts";
 import type { PostInput, PostInputWithUserId, TestPostPage } from "./types";
+import { removeFile } from "../../utils/removeLocalFile";
+
+jest.mock("../../utils/removeLocalFile", () => ({
+  removeFile: jest.fn().mockResolvedValue(undefined),
+}));
 
 let app: Express;
 let userTokens: Tokens;
@@ -59,7 +63,7 @@ describe("Create post", () => {
 });
 
 describe("with post creation", () => {
-  let post: RawPost;
+  let postId: string;
 
   beforeEach(async () => {
     const postToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
@@ -69,7 +73,7 @@ describe("with post creation", () => {
 
     const createdPosts = await postModel.create(postToInsert);
 
-    post = createdPosts[0];
+    postId = createdPosts[0]._id.toString();
   });
 
   describe("Get posts", () => {
@@ -138,7 +142,7 @@ describe("with post creation", () => {
       };
 
       const response = await request(app)
-        .put(`/post/${post._id}`)
+        .put(`/post/${postId}`)
         .set("Cookie", getCookieSetters(userTokens))
         .send(postUpdate);
 
@@ -157,9 +161,37 @@ describe("with post creation", () => {
 
     it("should return 400 when trying to edit a post with invalid input", async () => {
       const response = await request(app)
-        .put(`/post/${post._id}`)
+        .put(`/post/${postId}`)
         .set("Cookie", getCookieSetters(userTokens))
         .send({ imgUrl: "not-a-url" });
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Delete post", () => {
+    it("should delete a post", async () => {
+      const response = await request(app)
+        .delete(`/post/${postId}`)
+        .set("Cookie", getCookieSetters(userTokens));
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({ _id: postId });
+      expect(removeFile).toHaveBeenCalledWith(POSTS[0].imgUrl);
+    });
+
+    it("should return 404 when trying to delete a non-existing post", async () => {
+      const nonExistingPostId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .delete(`/post/${nonExistingPostId}`)
+        .set("Cookie", getCookieSetters(userTokens));
+
+      expect(response.status).toBe(404);
+    });
+
+    it("should return 400 when trying to delete with an invalid post ID", async () => {
+      const invalidPostId = "invalid-id";
+      const response = await request(app)
+        .delete(`/post/${invalidPostId}`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(400);
     });
   });
