@@ -23,3 +23,7 @@ export const IdParamSchema = z.object({
 export const CreationDateSchema = z.iso
   .datetime()
   .transform((str) => new Date(str));
+
+export const PostIdParamSchema = z.object({
+  postId: IdSchema,
+});
