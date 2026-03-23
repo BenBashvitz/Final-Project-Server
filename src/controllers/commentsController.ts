@@ -7,6 +7,7 @@ import Comment from "../types/comment";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
 import { PostIdParamSchema } from "../schemas/common";
+import postModel from "../models/postModel";
 
 class CommentsController extends BaseController<Comment> {
   constructor() {
@@ -20,10 +21,20 @@ class CommentsController extends BaseController<Comment> {
 
       const userId = req.user?._id;
 
+      const post = await postModel.findById(postId);
+
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
+
       const insertedComment = await this.model.create({
         ...commentData,
         userId,
         postId,
+      });
+
+      await postModel.findByIdAndUpdate(postId, {
+        $inc: { commentCount: 1 },
       });
 
       const [enrichedComment] = await this.model.aggregate<Comment>([

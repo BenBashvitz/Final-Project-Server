@@ -42,6 +42,12 @@ describe("Create comment", () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject(COMMENTS[0]);
+
+    const commentInDb = await postModel.findById(postIds[0], {
+      _id: 1,
+      commentCount: 1,
+    });
+    expect(commentInDb?.commentCount).toBe(1);
   });
 
   it("should fail to create a comment with missing required fields", async () => {
