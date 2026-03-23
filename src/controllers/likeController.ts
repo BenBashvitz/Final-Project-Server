@@ -4,7 +4,8 @@ import z, { ZodError } from "zod";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
 import { PostIdParamSchema } from "../schemas/common";
-import { AuthRequest } from "../types/request";
+import { AuthRequest, ResponseErrorMessage } from "../types/request";
+import { MongoServerError } from "mongodb";
 
 const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
   (
@@ -13,7 +14,7 @@ const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
       {
         $inc: { likeCount: like ? 1 : -1 },
       },
-      { new: true, projection: { _id: 1, likeCount: 1 } },
+      { new: true, projection: { _id: 1, likeCount: 1 }, runValidators: true },
     )
   )?.toObject() ?? null;
 
@@ -40,6 +41,14 @@ const like = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     if (error instanceof ZodError) {
       return res.status(400).send(z.treeifyError(error));
+    }
+
+    const dupKeyErrorCode = 11000;
+
+    if (error instanceof MongoServerError && error.code === dupKeyErrorCode) {
+      return res
+        .status(409)
+        .send(ResponseErrorMessage.POST_IS_ALREADY_LIKED_BY_USER);
     }
 
     console.error(`An error occurred while adding like to the post: `, error);
