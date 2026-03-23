@@ -3,10 +3,11 @@ import z, { ZodError } from "zod";
 import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import commentModel from "../models/commentModel";
 import postModel from "../models/postModel";
-import { CommentBodySchema, PostIdParamsSchema } from "../schemas/comment";
+import { CommentBodySchema } from "../schemas/comment";
 import Comment from "../types/comment";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { PostIdParamSchema } from "../schemas/common";
 
 class CommentsController extends BaseController<Comment> {
   constructor() {
@@ -16,12 +17,24 @@ class CommentsController extends BaseController<Comment> {
   override async post(req: AuthRequest, res: Response) {
     try {
       const commentData = CommentBodySchema.parse(req.body);
+      const { postId } = PostIdParamSchema.parse(req.params);
 
       const userId = req.user?._id;
+
+      const post = await postModel.findById(postId);
+
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
 
       const insertedComment = await this.model.create({
         ...commentData,
         userId,
+        postId,
+      });
+
+      await postModel.findByIdAndUpdate(postId, {
+        $inc: { commentCount: 1 },
       });
 
       const [enrichedComment] = await this.model.aggregate<Comment>([
@@ -44,7 +57,7 @@ class CommentsController extends BaseController<Comment> {
 
   override async getAll(req: Request, res: Response) {
     try {
-      const { postId } = PostIdParamsSchema.parse(req.params);
+      const { postId } = PostIdParamSchema.parse(req.params);
 
       const post = await postModel.findById(postId);
 

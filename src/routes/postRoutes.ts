@@ -1,6 +1,7 @@
 import express from "express";
 import postController from "../controllers/postController";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import likeRouter from "./likeRoutes";
 import commentRouter from "./commentRoutes";
 const router = express.Router();
 
@@ -276,6 +277,8 @@ router.delete(
   postController.delete.bind(postController),
 );
 
-router.use("/:postId/comments", commentRouter);
+router.use("/:postId/like", likeRouter);
+
+router.use("/:postId/comment", commentRouter);
 
 export default router;

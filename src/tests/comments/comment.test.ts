@@ -5,11 +5,10 @@ import initApp from "../../index";
 import commentModel from "../../models/commentModel";
 import postModel from "../../models/postModel";
 import type { Tokens } from "../../types/token";
-import { User } from "../../types/user";
 import { POSTS } from "../posts/consts";
 import { getCookieSetters, setupMultipleUsersForTests } from "../utils";
 import { COMMENTS } from "./consts";
-import { CommentInput, CommentInputWithUserAndPostIds } from "./types";
+import { CommentInputWithUserAndPostIds } from "./types";
 
 let app: Express;
 let userTokens: Tokens[] = [];
@@ -35,27 +34,28 @@ beforeAll(async () => {
 
 describe("Create comment", () => {
   it("should create a comment successfully", async () => {
-    const commentData = {
-      ...COMMENTS[0],
-      postId: postIds[0],
-    };
-
     const response = await request(app)
-      .post("/comment")
+      .post(`/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
-      .send(commentData);
+      .send(COMMENTS[0]);
 
     expect(response.status).toBe(201);
-    expect(response.body).toMatchObject(commentData);
+    expect(response.body).toMatchObject(COMMENTS[0]);
+
+    const commentInDb = await postModel.findById(postIds[0], {
+      _id: 1,
+      commentCount: 1,
+    });
+    expect(commentInDb?.commentCount).toBe(1);
   });
 
   it("should fail to create a comment with missing required fields", async () => {
     const commentData = {
-      message: "Test Comment",
+      message: COMMENTS[0].message,
     };
 
     const response = await request(app)
-      .post("/comment")
+      .post(`/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
       .send(commentData);
 
@@ -78,7 +78,7 @@ describe("With comments creation", () => {
 
   describe("Get comments for a post", () => {
     it("should get comments for a specific post", async () => {
-      const response = await request(app).get(`/post/${postIds[0]}/comments`);
+      const response = await request(app).get(`/post/${postIds[0]}/comment`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -97,16 +97,14 @@ describe("With comments creation", () => {
     it("should return 404 for non-existent post", async () => {
       const nonExistentPostId = new mongoose.Types.ObjectId().toString();
       const response = await request(app).get(
-        `/post/${nonExistentPostId}/comments`,
+        `/post/${nonExistentPostId}/comment`,
       );
       expect(response.status).toBe(404);
     });
 
     it("should return 400 for invalid post ID", async () => {
       const invalidPostId = "invalid-id";
-      const response = await request(app).get(
-        `/post/${invalidPostId}/comments`,
-      );
+      const response = await request(app).get(`/post/${invalidPostId}/comment`);
       expect(response.status).toBe(400);
     });
   });

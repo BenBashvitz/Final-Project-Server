@@ -8,12 +8,19 @@ const router = express.Router({
 
 /**
  * @swagger
- * /comment:
+ * /post/{postId}/comment:
  *   post:
  *     summary: Create a new comment
  *     tags: [Comments]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
  *     requestBody:
  *       required: true
  *       content:
@@ -22,12 +29,13 @@ const router = express.Router({
  *             type: object
  *             required:
  *               - message
- *               - postId
+ *               - creationDate
  *             properties:
  *               message:
  *                 type: string
- *               postId:
+ *               creationDate:
  *                 type: string
+ *                 format: date-time
  *     responses:
  *       201:
  *         description: The comment was successfully created
@@ -67,7 +75,7 @@ router.post(
 
 /**
  * @swagger
- * /post/{postId}/comments:
+ * /post/{postId}/comment:
  *   get:
  *     summary: Get all comments for a specific post
  *     tags: [Comments]

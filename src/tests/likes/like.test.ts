@@ -51,7 +51,7 @@ describe("with post creation", () => {
   describe("Like post", () => {
     it("should like a post", async () => {
       const response = await request(app)
-        .post(`/like/${post._id}`)
+        .post(`/post/${post._id}/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
@@ -67,7 +67,7 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .post("/like/invalidPostId")
+        .post(`/post/invalidPostId/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
@@ -78,7 +78,7 @@ describe("with post creation", () => {
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .post(`/like/${nonExistingPostId}`)
+        .post(`/post/${nonExistingPostId}/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
@@ -94,7 +94,7 @@ describe("with post creation", () => {
 
     it("should unlike a post", async () => {
       const response = await request(app)
-        .post(`/like/unlike/${post._id}`)
+        .delete(`/post/${post._id}/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
@@ -109,7 +109,7 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .post("/like/unlike/invalidPostId")
+        .delete(`/post/invalidPostId/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
@@ -120,7 +120,7 @@ describe("with post creation", () => {
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .post(`/like/unlike/${nonExistingPostId}`)
+        .delete(`/post/${nonExistingPostId}/like`)
         .set("Cookie", [
           `${refreshTokenCookieName}=${userTokens.refreshToken}`,
           `${accessTokenCookieName}=${userTokens.accessToken}`,
