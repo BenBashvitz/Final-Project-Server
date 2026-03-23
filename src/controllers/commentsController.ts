@@ -1,8 +1,9 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import z, { ZodError } from "zod";
 import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import commentModel from "../models/commentModel";
-import { CommentBodySchema } from "../schemas/comment";
+import postModel from "../models/postModel";
+import { CommentBodySchema, PostIdParamsSchema } from "../schemas/comment";
 import Comment from "../types/comment";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
@@ -38,6 +39,39 @@ class CommentsController extends BaseController<Comment> {
       console.error(`An error occurred while creating comment: `, error);
 
       return res.status(500).send(`An error occurred while creating comment`);
+    }
+  }
+
+  override async getAll(req: Request, res: Response) {
+    try {
+      const { postId } = PostIdParamsSchema.parse(req.params);
+
+      const post = await postModel.findById(postId);
+
+      if (!post) {
+        return res.status(404).send(`Post not found`);
+      }
+
+      const comments = await this.model.aggregate<Comment>([
+        { $match: { postId } },
+        ...USER_LOOKUP_PIPELINE_STAGE,
+        { $unset: ["userId"] },
+      ]);
+
+      return res.send(comments);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).send(z.treeifyError(error));
+      }
+
+      console.error(
+        "An error occurred while getting comments for post: ",
+        error,
+      );
+
+      return res
+        .status(500)
+        .send("An error occurred while getting comments for post");
     }
   }
 }

@@ -6,3 +6,7 @@ export const CommentBodySchema = z.object({
   postId: IdSchema,
   creationDate: CreationDateSchema,
 });
+
+export const PostIdParamsSchema = z.object({
+  postId: IdSchema,
+});
