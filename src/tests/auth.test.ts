@@ -1,7 +1,7 @@
 import { Express } from "express";
 import mongoose from "mongoose";
 import request from "supertest";
-import { accessTokenCookieName, refreshTokenCookieName } from "../consts";
+import { refreshTokenCookieName } from "../consts";
 import initApp from "../index";
 import userModel from "../models/userModel";
 import type { Tokens } from "../types/token";
@@ -9,6 +9,7 @@ import { USERS } from "./consts";
 import {
   expectNoTokens,
   expectTokens,
+  getCookieSetters,
   getTokensFromResponse,
   setupMultipleUsersForTests,
 } from "./utils";
@@ -123,10 +124,7 @@ describe("User logout", () => {
   test("should logout user", async () => {
     const response = await request(app)
       .post("/auth/logout")
-      .set("Cookie", [
-        `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
-        `${accessTokenCookieName}=${userTokens[0].accessToken}`,
-      ]);
+      .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.statusCode).toBe(200);
     expectNoTokens(response);
@@ -135,17 +133,11 @@ describe("User logout", () => {
   test("should fail to refresh token after logout", async () => {
     await request(app)
       .post("/auth/logout")
-      .set("Cookie", [
-        `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
-        `${accessTokenCookieName}=${userTokens[0].accessToken}`,
-      ]);
+      .set("Cookie", getCookieSetters(userTokens[0]));
 
     const response = await request(app)
       .post("/auth/refresh-token")
-      .set("Cookie", [
-        `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
-        `${accessTokenCookieName}=${userTokens[0].accessToken}`,
-      ]);
+      .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.statusCode).toBe(401);
   });
@@ -157,10 +149,7 @@ describe("User logout", () => {
 
     const response = await request(app)
       .post("/auth/logout")
-      .set("Cookie", [
-        `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
-        `${accessTokenCookieName}=${userTokens[0].accessToken}`,
-      ]);
+      .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.status).toBe(500);
   });
