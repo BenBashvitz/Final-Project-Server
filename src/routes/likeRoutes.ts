@@ -2,16 +2,18 @@ import express from "express";
 import likeController from "../controllers/likeController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
-const router = express.Router();
+const router = express.Router({
+  mergeParams: true,
+});
 
 /**
  * @swagger
- * /like/{id}:
+ * post/{id}/like:
  *   post:
  *     summary: Like a post
  *     tags: [Likes]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -61,16 +63,16 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/:id", authMiddleware, likeController.like);
+router.post("/", authMiddleware, likeController.like);
 
 /**
  * @swagger
- * /like/unlike/{id}:
- *   post:
+ * post/{id}/like:
+ *   delete:
  *     summary: Unlike a post
  *     tags: [Likes]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -120,6 +122,6 @@ router.post("/:id", authMiddleware, likeController.like);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/unlike/:id", authMiddleware, likeController.unlike);
+router.delete("/", authMiddleware, likeController.unlike);
 
 export default router;

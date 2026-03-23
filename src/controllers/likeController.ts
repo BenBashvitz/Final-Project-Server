@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
+import { PostIdParamSchema } from "../schemas/common";
 import { AuthRequest } from "../types/request";
-import { IdParamSchema } from "../schemas/common";
 
 const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
   (
@@ -19,18 +19,18 @@ const likePost = async (postId: mongoose.Types.ObjectId, like: boolean) =>
 
 const like = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = IdParamSchema.parse(req.params);
+    const { postId } = PostIdParamSchema.parse(req.params);
     const userId = req.user?._id;
 
-    const post = await postModel.findById(id);
+    const post = await postModel.findById(postId);
 
     if (!post) {
       return res.status(404).send(`The post was not found`);
     }
 
-    await likeModel.create({ postId: id, userId });
+    await likeModel.create({ postId, userId });
 
-    const likeUpdate = await likePost(id, true);
+    const likeUpdate = await likePost(postId, true);
 
     if (!likeUpdate) {
       return res.status(404).send(`The post was not found`);
@@ -52,10 +52,10 @@ const like = async (req: AuthRequest, res: Response) => {
 
 const unlike = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = IdParamSchema.parse(req.params);
+    const { postId } = PostIdParamSchema.parse(req.params);
     const userId = req.user?._id;
 
-    const response = await likeModel.deleteOne({ postId: id, userId });
+    const response = await likeModel.deleteOne({ postId, userId });
 
     if (response.deletedCount === 0) {
       return res
@@ -63,7 +63,7 @@ const unlike = async (req: AuthRequest, res: Response) => {
         .send(`There was no like found for this post and user`);
     }
 
-    const likeUpdate = await likePost(id, false);
+    const likeUpdate = await likePost(postId, false);
 
     if (!likeUpdate) {
       return res.status(404).send(`The post was not found`);
