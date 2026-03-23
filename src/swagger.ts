@@ -142,6 +142,42 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        Comment: {
+          type: "object",
+          required: ["_id", "message", "user", "creationDate", "postId"],
+          properties: {
+            _id: {
+              type: "string",
+              description: "Comment ID",
+              example: "697cc87180aa7bb6865a259d",
+            },
+            message: {
+              type: "string",
+              description: "The comment message",
+              example: "This is a comment on the post.",
+            },
+            user: {
+              type: "object",
+              description: "The user who created the comment",
+              example: {
+                _id: "697cc87180aa7bb6865a259d",
+                username: "john_doe",
+                imgUrl: "https://example.com/profile.jpg",
+              },
+            },
+            creationDate: {
+              type: "string",
+              format: "date-time",
+              description: "The date and time when the comment was created",
+              example: "2024-06-01T12:00:00Z",
+            },
+            postId: {
+              type: "string",
+              description: "The ID of the post to which the comment belongs",
+              example: "697cc87180aa7bb6865a259e",
+            },
+          },
+        },
       },
     },
   },
