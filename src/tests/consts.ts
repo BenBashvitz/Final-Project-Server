@@ -11,4 +11,14 @@ export const USERS: UserInput[] = [
     username: "example2User",
     password: "example2Pass",
   },
+  {
+    email: "example3@example.com",
+    username: "example3User",
+    password: "example3Pass",
+  },
+  {
+    email: "example4@example.com",
+    username: "example4User",
+    password: "example4Pass",
+  },
 ];

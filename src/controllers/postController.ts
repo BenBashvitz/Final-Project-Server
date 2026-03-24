@@ -2,6 +2,7 @@ import { Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../configs/envVar";
+import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
 import { IdParamSchema } from "../schemas/common";
@@ -22,16 +23,7 @@ class PostController extends BaseController<RawPost> {
 
   private getEnrichmentPipeline(currentUserId: mongoose.Types.ObjectId) {
     return [
-      {
-        $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "user",
-          pipeline: [{ $project: { _id: 1, username: 1, imgUrl: 1 } }],
-        },
-      },
-      { $unwind: "$user" },
+      ...USER_LOOKUP_PIPELINE_STAGE,
       {
         $lookup: {
           from: "likes",
