@@ -10,4 +10,5 @@ export enum ResponseErrorMessage {
   CREDENTIALS_ALREADY_TAKEN = "The username or email are already taken.",
   ERROR_REGISTERING_USER = "There was an error registering the user.",
   ERROR_LOGGING_OUT = "There was an error logging out.",
+  POST_IS_ALREADY_LIKED_BY_USER = "The post is already liked by the user.",
 }

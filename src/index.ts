@@ -9,6 +9,7 @@ import { UPLOADS_ROUTE } from "./consts";
 import authRouter from "./routes/authRoutes";
 import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
+import likeRouter from "./routes/likeRoutes";
 import swaggerSpec from "./swagger";
 
 const initApp = async () => {
@@ -36,6 +37,7 @@ const initApp = async () => {
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use("/post", postRouter);
+  app.use("/like", likeRouter);
   app.use("/auth", authRouter);
   app.use("/upload", multerRouter);
   app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));

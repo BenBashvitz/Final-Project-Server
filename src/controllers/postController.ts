@@ -2,18 +2,18 @@ import { Response } from "express";
 import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import config from "../configs/envVar";
+import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
+import { IdParamSchema } from "../schemas/common";
 import {
-  GetAllPostsQueryParams,
+  GetAllPostsQueryParamsSchema,
   PostInputSchema,
-  UpdatePostBody,
+  UpdatePostBodySchema,
 } from "../schemas/post";
 import { Post, PostPage, RawPost } from "../types/post";
 import { AuthRequest } from "../types/request";
-import BaseController from "./baseController";
 import { removeFile } from "../utils/removeLocalFile";
-import likeModel from "../models/likeModel";
-import { IdParamSchema } from "../schemas/common";
+import BaseController from "./baseController";
 
 class PostController extends BaseController<RawPost> {
   constructor() {
@@ -65,7 +65,7 @@ class PostController extends BaseController<RawPost> {
 
   override async getAll(req: AuthRequest, res: Response) {
     try {
-      const { cursor } = GetAllPostsQueryParams.parse(req.query);
+      const { cursor } = GetAllPostsQueryParamsSchema.parse(req.query);
 
       const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
@@ -173,7 +173,7 @@ class PostController extends BaseController<RawPost> {
           .send("You are not authorized to update this post");
       }
 
-      const postUpdate = UpdatePostBody.parse(req.body);
+      const postUpdate = UpdatePostBodySchema.parse(req.body);
 
       const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
         new: true,

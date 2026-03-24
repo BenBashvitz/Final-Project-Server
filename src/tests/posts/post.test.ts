@@ -73,7 +73,7 @@ describe("with post creation", () => {
 
     const createdPosts = await postModel.create(postToInsert);
 
-    postId = createdPosts[0]._id.toString();
+    postId = createdPosts[0].toObject()._id.toString();
   });
 
   describe("Get posts", () => {

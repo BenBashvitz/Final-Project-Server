@@ -6,7 +6,7 @@ const CursorSchema = z.object({
   creationDate: CreationDateSchema,
 });
 
-export const GetAllPostsQueryParams = z.object({
+export const GetAllPostsQueryParamsSchema = z.object({
   cursor: z
     .string()
     .optional()
@@ -28,12 +28,12 @@ export const GetAllPostsQueryParams = z.object({
     .pipe(CursorSchema.optional()),
 });
 
-export const UpdatePostBody = z.object({
+export const UpdatePostBodySchema = z.object({
   description: z.string(),
   imgUrl: z.string(),
 });
 
 export const PostInputSchema = z.object({
-  ...UpdatePostBody.shape,
+  ...UpdatePostBodySchema.shape,
   creationDate: CreationDateSchema,
 });
