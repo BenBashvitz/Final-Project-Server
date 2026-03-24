@@ -44,9 +44,9 @@ class BaseController<T> {
       const data = await this.model.findById(params.id);
 
       if (data) {
-        res.send(data);
+        return res.send(data);
       } else {
-        res
+        return res
           .status(404)
           .send(`The entity with the id ${params.id} was not found`);
       }
@@ -55,7 +55,7 @@ class BaseController<T> {
         `An error occurred while getting data with the id: ${params.id} `,
         error,
       );
-      res
+      return res
         .status(500)
         .send(`An error occurred while getting data with the id: ${params.id}`);
     }
