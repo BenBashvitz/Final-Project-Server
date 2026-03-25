@@ -40,7 +40,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       400:
- *         description: Bad request - Invalid post input
+ *         description: Bad request - Invalid user input
  *         content:
  *          application/json:
  *            schema:
@@ -63,7 +63,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: User not found
+ *         description: User was not found
  *         content:
  *           application/json:
  *             schema:
