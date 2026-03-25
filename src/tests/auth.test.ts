@@ -3,14 +3,16 @@ import mongoose from "mongoose";
 import request from "supertest";
 import { refreshTokenCookieName } from "../consts";
 import initApp from "../index";
+import postModel from "../models/postModel";
 import userModel from "../models/userModel";
 import type { Tokens } from "../types/token";
-import { USERS } from "./consts";
+import { COMMENTS, POSTS, USERS } from "./consts";
 import {
   expectNoTokens,
   expectTokens,
   getCookieSetters,
   getTokensFromResponse,
+  setupMultiplePostsForTests,
   setupMultipleUsersForTests,
 } from "./utils";
 
@@ -152,6 +154,108 @@ describe("User logout", () => {
       .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.status).toBe(500);
+  });
+});
+
+describe("Operations with accesses token", () => {
+  let userTokens: Tokens[] = [];
+  let userIds: string[] = [];
+
+  beforeEach(async () => {
+    const userData = await setupMultipleUsersForTests(app);
+    userTokens = userData.userTokens;
+    userIds = userData.userIds;
+  });
+
+  describe("Post", () => {
+    test("should fail to create a post without a token", async () => {
+      const response = await request(app).post("/post").send(POSTS[0]);
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("should fail to create a post with invalid token", async () => {
+      const invalidToken = userTokens[0].accessToken + "a";
+
+      const response = await request(app)
+        .post("/post")
+        .set(
+          "Cookie",
+          getCookieSetters({
+            accessToken: invalidToken,
+            refreshToken: userTokens[0].refreshToken,
+          }),
+        )
+        .send(POSTS[0]);
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("should fail to create a post with expired token", async () => {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      const response = await request(app)
+        .post("/post")
+        .set("Cookie", getCookieSetters(userTokens[0]))
+        .send(POSTS[0]);
+
+      expect(response.statusCode).toBe(401);
+    }, 10000);
+  });
+
+  describe("Comment", () => {
+    let postId: string;
+
+    beforeEach(async () => {
+      await postModel.deleteMany();
+
+      postId = await setupMultiplePostsForTests(userIds);
+    });
+
+    test("should fail to create a comment without a token", async () => {
+      const response = await request(app)
+        .post(`/post/${postId}/comment`)
+        .send({
+          ...COMMENTS[0],
+          postId,
+        });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("should fail to create a comment with invalid token", async () => {
+      const invalidToken = userTokens[0].accessToken + "a";
+
+      const response = await request(app)
+        .post(`/post/${postId}/comment`)
+        .set(
+          "Cookie",
+          getCookieSetters({
+            accessToken: invalidToken,
+            refreshToken: userTokens[0].refreshToken,
+          }),
+        )
+        .send({
+          ...COMMENTS[0],
+          postId,
+        });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("should fail to create a comment with expired token", async () => {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      const response = await request(app)
+        .post(`/post/${postId}/comment`)
+        .set("Cookie", getCookieSetters(userTokens[0]))
+        .send({
+          ...COMMENTS[0],
+          postId,
+        });
+
+      expect(response.statusCode).toBe(401);
+    }, 10000);
   });
 });
 
