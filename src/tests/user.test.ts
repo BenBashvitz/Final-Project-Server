@@ -83,7 +83,7 @@ describe("With created user", () => {
             jest
                 .spyOn(userModel, "findByIdAndUpdate")
                 .mockRejectedValueOnce(new Error("Database error"));
-            const updatedData = {
+            const updatedData: UserUpdate = {
                 username: "updatedUsername",
                 imgUrl: 'public/uploads/beautiful-view-22.jpg'
             };
