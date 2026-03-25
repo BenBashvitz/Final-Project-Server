@@ -1,5 +1,6 @@
 import express from "express";
 import userController from "../controllers/userController";
+import {authMiddleware} from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
  * @swagger
  * /user/{id}:
  *   put:
- *     description: Update user details
+ *     summary: Update user details
  *     tags: [Users]
  *     security:
  *       - accessToken: []
@@ -31,16 +32,9 @@ const router = express.Router();
  *               username:
  *                 type: string
  *                 example: exampleUser
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The user ID
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: User was updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -82,6 +76,6 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put("/:id", userController.put.bind(userController));
+router.put("/:id", authMiddleware, userController.put.bind(userController));
 
 export default router;

@@ -14,7 +14,13 @@ class UserController extends BaseController<RawUser> {
 
     override async put(req: AuthRequest, res: Response) {
         try {
-            const {id} = IdSchema.parse(req.params);
+            const id = IdSchema.parse(req.params.id);
+
+            const user = await this.model.findById(id);
+
+            if (!user) {
+                return res.status(404).send(`The user was not found`);
+            }
 
             if (id.toString() !== req.user?._id) {
                 return res.status(403).send("You are not authorized to update this user");
@@ -25,10 +31,10 @@ class UserController extends BaseController<RawUser> {
             const updatedData = await this.model.findByIdAndUpdate(id, userUpdate, {
                 new: true,
                 runValidators: true,
-                projection: {_id: 1, description: 1, imgUrl: 1},
+                projection: {_id: 1, username: 1, imgUrl: 1},
             });
 
-            if (updatedData) {
+            if (!updatedData) {
                 return res.status(404).send(`The user was not found`);
             }
 
