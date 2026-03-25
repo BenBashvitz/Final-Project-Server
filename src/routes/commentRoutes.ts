@@ -73,4 +73,55 @@ router.post(
   commentController.post.bind(commentController),
 );
 
+/**
+ * @swagger
+ * /post/{postId}/comment:
+ *   get:
+ *     summary: Get all comments for a specific post
+ *     tags: [Comments]
+ *     security:
+ *       - accessToken: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the post for which to retrieve comments
+ *     responses:
+ *       200:
+ *         description: list of comments for the specified post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *        description: Bad request, invalid post id
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                cursor:
+ *                  errors: []
+ *                  properties:
+ *                    id:
+ *                      errors: ["Invalid input. expected string, received undefined"]
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/", commentController.getAll.bind(commentController));
+
 export default router;
