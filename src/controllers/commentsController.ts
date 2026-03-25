@@ -1,5 +1,4 @@
 import { Response } from "express";
-import mongoose from "mongoose";
 import z, { ZodError } from "zod";
 import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import commentModel from "../models/commentModel";
@@ -7,6 +6,8 @@ import { CommentBodySchema } from "../schemas/comment";
 import Comment from "../types/comment";
 import { AuthRequest } from "../types/request";
 import BaseController from "./baseController";
+import { PostIdParamSchema } from "../schemas/common";
+import postModel from "../models/postModel";
 
 class CommentsController extends BaseController<Comment> {
   constructor() {
@@ -16,20 +17,28 @@ class CommentsController extends BaseController<Comment> {
   override async post(req: AuthRequest, res: Response) {
     try {
       const commentData = CommentBodySchema.parse(req.body);
+      const { postId } = PostIdParamSchema.parse(req.params);
 
-      // const userId = req.user?._id;
+      const userId = req.user?._id;
 
-      const currentUserId = new mongoose.Types.ObjectId(
-        "69ac63d7aa7e528360e63264",
-      );
+      const post = await postModel.findById(postId);
 
-      const instertedComment = await this.model.create({
+      if (!post) {
+        return res.status(404).send(`The post was not found`);
+      }
+
+      const insertedComment = await this.model.create({
         ...commentData,
-        userId: currentUserId,
+        userId,
+        postId,
+      });
+
+      await postModel.findByIdAndUpdate(postId, {
+        $inc: { commentCount: 1 },
       });
 
       const [enrichedComment] = await this.model.aggregate<Comment>([
-        { $match: { _id: instertedComment._id } },
+        { $match: { _id: insertedComment._id } },
         ...USER_LOOKUP_PIPELINE_STAGE,
         { $unset: ["userId"] },
       ]);
@@ -40,16 +49,9 @@ class CommentsController extends BaseController<Comment> {
         return res.status(400).send(z.treeifyError(error));
       }
 
-      console.error(
-        `An error occurred while creating the following post ${req.body}: `,
-        error,
-      );
+      console.error(`An error occurred while creating comment: `, error);
 
-      return res
-        .status(500)
-        .send(
-          `An error occurred while creating the following post: ${req.body}`,
-        );
+      return res.status(500).send(`An error occurred while creating comment`);
     }
   }
 }

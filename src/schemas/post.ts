@@ -1,27 +1,8 @@
-import mongoose from "mongoose";
 import z from "zod";
-
-export const PostIdSchema = z.string().transform((value, ctx) => {
-  try {
-    return new mongoose.Types.ObjectId(value);
-  } catch (error) {
-    ctx.addIssue({
-      format: "object_id",
-      code: "invalid_format",
-      message: "Invalid ObjectID format",
-      input: value,
-    });
-
-    return z.NEVER;
-  }
-});
-
-export const CreationDateSchema = z.iso
-  .datetime()
-  .transform((str) => new Date(str));
+import { CreationDateSchema, IdSchema } from "./common";
 
 const CursorSchema = z.object({
-  _id: PostIdSchema,
+  _id: IdSchema,
   creationDate: CreationDateSchema,
 });
 
@@ -45,10 +26,6 @@ export const GetAllPostsQueryParamsSchema = z.object({
       }
     })
     .pipe(CursorSchema.optional()),
-});
-
-export const PostIdParamsSchema = z.object({
-  id: PostIdSchema,
 });
 
 export const UpdatePostBodySchema = z.object({

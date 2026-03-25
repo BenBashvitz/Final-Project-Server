@@ -1,6 +1,8 @@
 import express from "express";
 import postController from "../controllers/postController";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import likeRouter from "./likeRoutes";
+import commentRouter from "./commentRoutes";
 const router = express.Router();
 
 /**
@@ -213,7 +215,7 @@ router.put("/:id", authMiddleware, postController.put.bind(postController));
  *     summary: Delete a post
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - accessToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -274,5 +276,9 @@ router.delete(
   authMiddleware,
   postController.delete.bind(postController),
 );
+
+router.use("/:postId/like", likeRouter);
+
+router.use("/:postId/comment", commentRouter);
 
 export default router;

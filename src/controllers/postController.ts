@@ -5,9 +5,9 @@ import config from "../configs/envVar";
 import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
+import { IdParamSchema } from "../schemas/common";
 import {
   GetAllPostsQueryParamsSchema,
-  PostIdParamsSchema,
   PostInputSchema,
   UpdatePostBodySchema,
 } from "../schemas/post";
@@ -151,7 +151,7 @@ class PostController extends BaseController<RawPost> {
   override async put(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostIdParamsSchema.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
@@ -192,7 +192,7 @@ class PostController extends BaseController<RawPost> {
   override async delete(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?._id;
-      const { id } = PostIdParamsSchema.parse(req.params);
+      const { id } = IdParamSchema.parse(req.params);
 
       const post = await this.model.findById(id);
 
@@ -215,7 +215,12 @@ class PostController extends BaseController<RawPost> {
         );
 
       if (deletedData) {
-        await removeFile(deletedData.imgUrl);
+        await removeFile(deletedData.imgUrl).catch((error) => {
+          console.error(
+            `An error occurred while deleting the post image file: `,
+            error,
+          );
+        });
         await likeModel.deleteMany({ postId: deletedData._id });
 
         res.status(200).json({ _id: deletedData._id });

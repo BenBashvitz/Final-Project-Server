@@ -12,8 +12,7 @@ import { TokenPayload, Tokens } from "../../types/token";
 import { USERS } from "../consts";
 import { POSTS } from "../posts/consts";
 import type { PostInputWithUserId } from "../posts/types";
-import { getUserToken } from "../utils";
-import { accessTokenCookieName, refreshTokenCookieName } from "../../consts";
+import { getCookieSetters, getUserToken } from "../utils";
 
 let app: Express;
 let userTokens: Tokens;
@@ -51,11 +50,8 @@ describe("with post creation", () => {
   describe("Like post", () => {
     it("should like a post", async () => {
       const response = await request(app)
-        .post(`/like/${post._id}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .post(`/post/${post._id}/like`)
+        .set("Cookie", getCookieSetters(userTokens));
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject<LikeResponse>({
@@ -67,22 +63,16 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .post("/like/invalidPostId")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .post(`/post/invalidPostId/like`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(400);
     });
 
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .post(`/like/${nonExistingPostId}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .post(`/post/${nonExistingPostId}/like`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(404);
     });
   });
@@ -94,11 +84,8 @@ describe("with post creation", () => {
 
     it("should unlike a post", async () => {
       const response = await request(app)
-        .post(`/like/unlike/${post._id}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .delete(`/post/${post._id}/like`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject<LikeResponse>({
         _id: post._id.toString(),
@@ -109,22 +96,16 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .post("/like/unlike/invalidPostId")
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .delete(`/post/invalidPostId/like`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(400);
     });
 
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .post(`/like/unlike/${nonExistingPostId}`)
-        .set("Cookie", [
-          `${refreshTokenCookieName}=${userTokens.refreshToken}`,
-          `${accessTokenCookieName}=${userTokens.accessToken}`,
-        ]);
+        .delete(`/post/${nonExistingPostId}/like`)
+        .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(404);
     });
   });
