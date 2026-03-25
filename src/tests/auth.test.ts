@@ -155,6 +155,58 @@ describe("User logout", () => {
   });
 });
 
+describe("Operations with accesses token", () => {
+  let userTokens: Tokens[] = [];
+  let userIds: string[] = [];
+
+  beforeEach(async () => {
+    const userData = await setupMultipleUsersForTests(app);
+    userTokens = userData.userTokens;
+    userIds = userData.userIds;
+  });
+
+  describe("User", () => {
+    test("should fail to update a user with invalid token", async () => {
+      const invalidToken = userTokens[0].accessToken + "a";
+
+      const response = await request(app)
+          .put(`/user/${userIds[0]}`)
+          .set(
+              "Cookie",
+              getCookieSetters({
+                accessToken: invalidToken,
+                refreshToken: userTokens[0].refreshToken,
+              }),
+          )
+          .send({
+            imgUrl: "public/uploads/beautiful-view-22.jpg",
+            username: "new username",
+          });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("should fail to create a user with expired token", async () => {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      const response = await request(app)
+          .put(`/user/${userIds[0]}`)
+          .set(
+              "Cookie",
+              getCookieSetters({
+                accessToken: userTokens[0].accessToken,
+                refreshToken: userTokens[0].refreshToken,
+              }),
+          )
+          .send({
+            imgUrl: "public/uploads/beautiful-view-22.jpg",
+            username: "new username",
+          });
+
+      expect(response.statusCode).toBe(401);
+    }, 10000);
+  });
+});
 afterAll(async () => {
   await mongoose.connection.close();
 });
