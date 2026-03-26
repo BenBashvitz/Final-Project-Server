@@ -40,3 +40,5 @@ export type UserDocument = Document<
   > & {
     id: string;
   };
+
+export type UserUpdate = Pick<User, 'imgUrl' | 'username'>

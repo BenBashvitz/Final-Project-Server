@@ -11,6 +11,7 @@ import likeRouter from "./routes/likeRoutes";
 import multerRouter from "./routes/multerRoutes";
 import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
+import userRoutes from "./routes/userRoutes";
 
 const initApp = async () => {
   const app = express();
@@ -42,6 +43,7 @@ const initApp = async () => {
   app.use("/upload", multerRouter);
   app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
   app.use("/auth", authRouter);
+  app.use("/user", userRoutes);
 
   return app;
 };
