@@ -109,6 +109,14 @@ describe("with post creation", () => {
         testConfig.POSTS_PAGE_SIZE,
       );
     });
+
+    it("should return 400 for invalid userId in query params", async () => {
+      const response = await request(app)
+        .get("/post")
+        .set("Cookie", getCookieSetters(userTokens[0]))
+        .query({ userId: "invalid-user-id" });
+      expect(response.status).toBe(400);
+    });
   });
 
   describe("With posts created by different users", () => {
