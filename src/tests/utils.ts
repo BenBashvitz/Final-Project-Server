@@ -26,10 +26,21 @@ export const setupMultipleUsersForTests = async (
   return { userTokens, userIds };
 };
 
-export const setupMultiplePostsForTests = async (userIds: string[]) => {
+export const setupDifferentUsersPosts = async (userIds: string[]) => {
   const postsToInsert: PostInputWithUserId[] = POSTS.map((post, index) => ({
     ...post,
     userId: userIds[index],
+  }));
+
+  const createdPosts = await postModel.create(postsToInsert);
+
+  return createdPosts[0].toObject()._id.toString();
+};
+
+export const setupSameUserPosts = async (userId: string) => {
+  const postsToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
+    ...post,
+    userId,
   }));
 
   const createdPosts = await postModel.create(postsToInsert);

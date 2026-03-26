@@ -12,7 +12,7 @@ import {
   expectTokens,
   getCookieSetters,
   getTokensFromResponse,
-  setupMultiplePostsForTests,
+  setupDifferentUsersPosts,
   setupMultipleUsersForTests,
 } from "./utils";
 
@@ -209,7 +209,7 @@ describe("Operations with accesses token", () => {
     beforeEach(async () => {
       await postModel.deleteMany();
 
-      postId = await setupMultiplePostsForTests(userIds);
+      postId = await setupDifferentUsersPosts(userIds);
     });
 
     test("should fail to create a comment without a token", async () => {

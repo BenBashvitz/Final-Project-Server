@@ -57,13 +57,20 @@ class PostController extends BaseController<RawPost> {
 
   override async getAll(req: AuthRequest, res: Response) {
     try {
-      const { cursor } = GetAllPostsQueryParamsSchema.parse(req.query);
+      const { cursor, userId } = GetAllPostsQueryParamsSchema.parse(req.query);
+
+      if (userId && userId.toString() !== req.user?._id) {
+        return res
+          .status(403)
+          .send("You are not authorized to view posts for this user");
+      }
 
       const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
       const posts = await this.model.aggregate<Post>([
         {
           $match: {
+            ...(userId && { userId }),
             ...(cursor && {
               $or: [
                 { creationDate: { $lt: cursor.creationDate } },
