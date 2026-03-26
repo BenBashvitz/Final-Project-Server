@@ -109,16 +109,6 @@ describe("with post creation", () => {
         testConfig.POSTS_PAGE_SIZE,
       );
     });
-
-    it("should return 403 when trying to get posts for another user", async () => {
-      const response = await request(app)
-        .get("/post")
-        .query({
-          userId: userIds[1],
-        })
-        .set("Cookie", getCookieSetters(userTokens[0]));
-      expect(response.status).toBe(403);
-    });
   });
 
   describe("With posts created by different users", () => {
