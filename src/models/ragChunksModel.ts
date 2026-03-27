@@ -10,6 +10,7 @@ const ragChunksSchema = new mongoose.Schema<RawRagChunk>({
     chunkIndex: {
         type: Number,
         required: true,
+        min: 0,
     },
     text: {
         type: String,
