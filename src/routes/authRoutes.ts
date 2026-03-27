@@ -170,9 +170,23 @@ router.post("/logout", authMiddleware, authController.logout);
  *   post:
  *     summary: Sign in using Google
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - credential
+ *             properties:
+ *               credential:
+ *                 type: string
+ *                 example: eyJhbGciOiJSUzI1NiIsImtpZCI6ImExMGasqwertyuihveY2ZWM1NmJkYTZlYjNiZDQ1NDM5ZjM1ZDciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3MTE1NjAyMzM5MzgtZm9oYm9kNHBqZXNnNWZuOGs4czgxYzVyMW1kNHUxZXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3MTE1NjAyMzM5MzgtZm9oYm9kNHBqZXNnNWZuOGs4czgxYzVyMW1kNHUxZXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDQxMzI5OTc0NTQ4NTk1NTQ0ODAiLCJlbWFpbCI6ImJhc2h2aXR6YmVuQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYmYiOjE3NzQ2Mzg3MTAsIm5hbWUiOiJiZW4gYmFzaHZpdHogKFRoZUZyaTNuZGx5UGFuZGEpIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0tMTGxEUnZIQkRGRmpaOWJjOXFSaTVld05EYzlWQkN6ZDFZa2NSU2N1U1dhdnBwdz1zOTYtYyIsImdpdmVuX25hbWUiOiJiZW4iLCJmYW1pbHlfbmFtZSI6ImJhc2h2aXR6IiwiaWF0IjoxNzc0NjM5MDEwLCJleHAiOjE3NzQ2NDI2MTAsImp0aSI6ImNiZWYwZTNkNzA4NDYwNTRiYzBjMDUyMGNlMWRhNWU0ZDdkNzBmZmUifQ.ema2GGlYXtq4J6wzHRSySagB-D8Db3xdZitn5bDQ8AtBdC8ACw0e1iLniX89HwoQZDKdmfqbOaOgTwaFl9wEIZ9xqXFBqTMF9FTDEn4HVGJ9loGuf9HvKvrk5FiYm4SLPnEWKUJivsPR-GGP3jAPH91nfOiC3li27FDRKy5QlhIGvCBAc9Qvhw96Lu5f5dkOlXcEx0rRWrSuoVIbwtJLmZET9qwertNJCLzTP8Qhph0k5smL8Vw-R1XY27kporvasdfgSJi9Mi6YeIANaSkqz334NrFn3pn47KE9LlMWYQ4vOlr1YbzzLxEh1VmL42ou5yeAq2LLuM7VoskmI7iYcA
  *     responses:
  *       200:
- *         description: Signed in successfully
+ *         description: User successfully logged in
+ *       201:
+ *         description: User successfully registered
  *       400:
  *         description: Bad request - Invalid input
  *         content:
@@ -184,7 +198,7 @@ router.post("/logout", authMiddleware, authController.logout);
  *               properties:
  *                 credential:
  *                   errors:
- *                     - Invalid input: expected string, received undefined
+ *                     - Invalid input: expected google oauth credential, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:
