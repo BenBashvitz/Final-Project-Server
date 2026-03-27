@@ -1,241 +1,264 @@
-import { Response } from "express";
+import {Response} from "express";
 import mongoose from "mongoose";
-import z, { ZodError } from "zod";
+import z, {ZodError} from "zod";
 import config from "../configs/envVar";
-import { USER_LOOKUP_PIPELINE_STAGE } from "../consts";
+import {USER_LOOKUP_PIPELINE_STAGE} from "../consts";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
-import { IdParamSchema } from "../schemas/common";
-import {
-  GetAllPostsQueryParamsSchema,
-  PostInputSchema,
-  UpdatePostBodySchema,
-} from "../schemas/post";
-import { Post, PostPage, RawPost } from "../types/post";
-import { AuthRequest } from "../types/request";
-import { removeFile } from "../utils/removeLocalFile";
+import {IdParamSchema} from "../schemas/common";
+import {GetAllPostsQueryParamsSchema, PostInputSchema, UpdatePostBodySchema,} from "../schemas/post";
+import {Post, PostPage, RawPost} from "../types/post";
+import {AuthRequest} from "../types/request";
+import {removeFile} from "../utils/removeLocalFile";
 import BaseController from "./baseController";
+import aiService from '../services/aiService';
+import computeCosineSimilarity from 'compute-cosine-similarity';
 
 class PostController extends BaseController<RawPost> {
-  constructor() {
-    super(postModel);
-  }
+    constructor() {
+        super(postModel);
+    }
 
-  private getEnrichmentPipeline(currentUserId: mongoose.Types.ObjectId) {
-    return [
-      ...USER_LOOKUP_PIPELINE_STAGE,
-      {
-        $lookup: {
-          from: "likes",
-          let: { postId: "$_id" },
-          pipeline: [
+    private getEnrichmentPipeline(currentUserId: mongoose.Types.ObjectId) {
+        return [
+            ...USER_LOOKUP_PIPELINE_STAGE,
             {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$postId", "$$postId"] },
-                    { $eq: ["$userId", currentUserId] },
-                  ],
+                $lookup: {
+                    from: "likes",
+                    let: {postId: "$_id"},
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {$eq: ["$postId", "$$postId"]},
+                                        {$eq: ["$userId", currentUserId]},
+                                    ],
+                                },
+                            },
+                        },
+                        {$limit: 1},
+                    ],
+                    as: "_likedByCurrentUser",
                 },
-              },
             },
-            { $limit: 1 },
-          ],
-          as: "_likedByCurrentUser",
-        },
-      },
-      {
-        $addFields: {
-          isLikedByCurrentUser: {
-            $gt: [{ $size: "$_likedByCurrentUser" }, 0],
-          },
-        },
-      },
-      { $unset: ["_likedByCurrentUser", "userId"] },
-    ];
-  }
-
-  override async getAll(req: AuthRequest, res: Response) {
-    try {
-      const { cursor } = GetAllPostsQueryParamsSchema.parse(req.query);
-
-      const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
-
-      const posts = await this.model.aggregate<Post>([
-        {
-          $match: {
-            ...(cursor && {
-              $or: [
-                { creationDate: { $lt: cursor.creationDate } },
-                {
-                  creationDate: cursor.creationDate,
-                  _id: { $lt: cursor._id },
+            {
+                $addFields: {
+                    isLikedByCurrentUser: {
+                        $gt: [{$size: "$_likedByCurrentUser"}, 0],
+                    },
                 },
-              ],
-            }),
-          },
-        },
-        { $sort: { creationDate: -1, _id: -1 } },
-        { $limit: config.POSTS_PAGE_SIZE + 1 },
-        ...this.getEnrichmentPipeline(currentUserId),
-      ]);
+            },
+            {$unset: ["_likedByCurrentUser", "userId"]},
+        ];
+    }
 
-      const hasNextPage = posts.length > config.POSTS_PAGE_SIZE;
+    override async getAll(req: AuthRequest, res: Response) {
+        try {
+            const {cursor} = GetAllPostsQueryParamsSchema.parse(req.query);
 
-      const id = posts[config.POSTS_PAGE_SIZE - 1]?._id;
-      const creationDate = posts[config.POSTS_PAGE_SIZE - 1]?.creationDate;
+            const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
-      const newCursor: PostPage["cursor"] =
-        id && creationDate && hasNextPage
-          ? {
-              _id: id,
-              creationDate,
+            const posts = await this.model.aggregate<Post>([
+                {
+                    $match: {
+                        ...(cursor && {
+                            $or: [
+                                {creationDate: {$lt: cursor.creationDate}},
+                                {
+                                    creationDate: cursor.creationDate,
+                                    _id: {$lt: cursor._id},
+                                },
+                            ],
+                        }),
+                    },
+                },
+                {$sort: {creationDate: -1, _id: -1}},
+                {$limit: config.POSTS_PAGE_SIZE + 1},
+                ...this.getEnrichmentPipeline(currentUserId),
+            ]);
+
+            const hasNextPage = posts.length > config.POSTS_PAGE_SIZE;
+
+            const id = posts[config.POSTS_PAGE_SIZE - 1]?._id;
+            const creationDate = posts[config.POSTS_PAGE_SIZE - 1]?.creationDate;
+
+            const newCursor: PostPage["cursor"] =
+                id && creationDate && hasNextPage
+                    ? {
+                        _id: id,
+                        creationDate,
+                    }
+                    : null;
+
+            if (hasNextPage) {
+                posts.pop();
             }
-          : null;
 
-      if (hasNextPage) {
-        posts.pop();
-      }
+            const postPage: PostPage = {
+                posts,
+                cursor: newCursor,
+            };
 
-      const postPage: PostPage = {
-        posts,
-        cursor: newCursor,
-      };
+            return res.send(postPage);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).send(z.treeifyError(error));
+            }
 
-      return res.send(postPage);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).send(z.treeifyError(error));
-      }
+            console.error(
+                `An error occurred while getting the current post page: `,
+                error,
+            );
 
-      console.error(
-        `An error occurred while getting the current post page: `,
-        error,
-      );
-
-      return res
-        .status(500)
-        .send(`An error occurred while getting the current post page`);
+            return res
+                .status(500)
+                .send(`An error occurred while getting the current post page`);
+        }
     }
-  }
 
-  override async post(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user?._id;
-      const postInput = PostInputSchema.parse(req.body);
+    override async post(req: AuthRequest, res: Response) {
+        try {
+            const userId = req.user?._id;
+            const postInput = PostInputSchema.parse(req.body);
 
-      const currentUserId = new mongoose.Types.ObjectId(userId);
+            const currentUserId = new mongoose.Types.ObjectId(userId);
 
-      const inserted = await this.model.create({
-        ...postInput,
-        userId: currentUserId,
-      });
+            const descriptionVector = await aiService.getTextVector(postInput.description)
 
-      const [enrichedPost] = await this.model.aggregate<Post>([
-        { $match: { _id: inserted._id } },
-        ...this.getEnrichmentPipeline(currentUserId),
-      ]);
+            const inserted = await this.model.create({
+                ...postInput,
+                userId: currentUserId,
+                descriptionVector,
+            });
 
-      return res.status(201).json(enrichedPost);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).send(z.treeifyError(error));
-      }
+            const [enrichedPost] = await this.model.aggregate<Post>([
+                {$match: {_id: inserted._id}},
+                ...this.getEnrichmentPipeline(currentUserId),
+            ]);
 
-      console.error(`An error occurred while creating the post: `, error);
 
-      return res.status(500).send(`An error occurred while creating the post`);
+
+            return res.status(201).json(enrichedPost);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).send(z.treeifyError(error));
+            }
+
+            console.error(`An error occurred while creating the post: `, error);
+
+            return res.status(500).send(`An error occurred while creating the post`);
+        }
     }
-  }
 
-  override async put(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user?._id;
-      const { id } = IdParamSchema.parse(req.params);
+    override async put(req: AuthRequest, res: Response) {
+        try {
+            const userId = req.user?._id;
+            const {id} = IdParamSchema.parse(req.params);
 
-      const post = await this.model.findById(id);
+            const post = await this.model.findById(id);
 
-      if (!post) {
-        return res.status(404).send(`The post was not found`);
-      }
+            if (!post) {
+                return res.status(404).send(`The post was not found`);
+            }
 
-      if (post.userId.toString() !== userId) {
-        return res
-          .status(403)
-          .send("You are not authorized to update this post");
-      }
+            if (post.userId.toString() !== userId) {
+                return res
+                    .status(403)
+                    .send("You are not authorized to update this post");
+            }
 
-      const postUpdate = UpdatePostBodySchema.parse(req.body);
+            const postUpdate = UpdatePostBodySchema.parse(req.body);
 
-      const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
-        new: true,
-        runValidators: true,
-        projection: { _id: 1, description: 1, imgUrl: 1 },
-      });
+            const descriptionVector = await aiService.getTextVector(postUpdate.description)
 
-      if (!updatedData) {
-        return res.status(404).send(`The post was not found`);
-      }
+            const updatedData = await this.model.findByIdAndUpdate(id, {
+                ...postUpdate,
+                descriptionVector,
+            }, {
+                new: true,
+                runValidators: true,
+                projection: {_id: 1, description: 1, imgUrl: 1},
+            });
 
-      return res.status(200).json(updatedData);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).send(z.treeifyError(error));
-      }
+            if (!updatedData) {
+                return res.status(404).send(`The post was not found`);
+            }
 
-      console.error(`An error occurred while updating the post: `, error);
+            return res.status(200).json(updatedData);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).send(z.treeifyError(error));
+            }
 
-      return res.status(500).send(`An error occurred while updating the post`);
+            console.error(`An error occurred while updating the post: `, error);
+
+            return res.status(500).send(`An error occurred while updating the post`);
+        }
     }
-  }
 
-  override async delete(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user?._id;
-      const { id } = IdParamSchema.parse(req.params);
+    override async delete(req: AuthRequest, res: Response) {
+        try {
+            const userId = req.user?._id;
+            const {id} = IdParamSchema.parse(req.params);
 
-      const post = await this.model.findById(id);
+            const post = await this.model.findById(id);
 
-      if (!post) {
-        return res.status(404).send(`The post was not found`);
-      }
+            if (!post) {
+                return res.status(404).send(`The post was not found`);
+            }
 
-      if (post.userId.toString() !== userId) {
-        return res
-          .status(403)
-          .send("You are not authorized to delete this post");
-      }
+            if (post.userId.toString() !== userId) {
+                return res
+                    .status(403)
+                    .send("You are not authorized to delete this post");
+            }
 
-      const deletedData: Pick<Post, "_id" | "imgUrl"> | null =
-        await this.model.findOneAndDelete(
-          {
-            _id: id,
-          },
-          { projection: { _id: 1, imgUrl: 1 } },
-        );
+            const deletedData: Pick<Post, "_id" | "imgUrl"> | null =
+                await this.model.findOneAndDelete(
+                    {
+                        _id: id,
+                    },
+                    {projection: {_id: 1, imgUrl: 1}},
+                );
 
-      if (deletedData) {
-        await removeFile(deletedData.imgUrl).catch((error) => {
-          console.error(
-            `An error occurred while deleting the post image file: `,
-            error,
-          );
-        });
-        await likeModel.deleteMany({ postId: deletedData._id });
+            if (deletedData) {
+                await removeFile(deletedData.imgUrl).catch((error) => {
+                    console.error(
+                        `An error occurred while deleting the post image file: `,
+                        error,
+                    );
+                });
+                await likeModel.deleteMany({postId: deletedData._id});
 
-        res.status(200).json({ _id: deletedData._id });
-      } else {
-        res.status(404).send(`The post was not found`);
-      }
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).send(z.treeifyError(error));
-      }
+                res.status(200).json({_id: deletedData._id});
+            } else {
+                res.status(404).send(`The post was not found`);
+            }
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).send(z.treeifyError(error));
+            }
 
-      console.error(`An error occurred while deleting post`, error);
-      res.status(500).send(`An error occurred while deleting post`);
+            console.error(`An error occurred while deleting post`, error);
+            res.status(500).send(`An error occurred while deleting post`);
+        }
     }
-  }
+
+    async searchPosts(req: Request, res: Response) {
+        const query = "";
+        const queryVector = await aiService.getTextVector(query);
+        const posts = await this.model.find({});
+
+        const scoredPosts: (RawPost & {similarityToQuery: number})[] = posts.map(post => ({
+            ...post.toObject(),
+            similarityToQuery: computeCosineSimilarity(post.descriptionVector, queryVector) ?? -1
+        }));
+
+        const relevantPostsBySimilarity = scoredPosts.filter(({similarityToQuery}) => similarityToQuery > 0.7).sort((a, b) => a.similarityToQuery - b.similarityToQuery);
+
+        return aiService.verifyPostsWithLLM(relevantPostsBySimilarity, query);
+    }
 }
 
 export default new PostController();

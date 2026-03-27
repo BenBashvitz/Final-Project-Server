@@ -14,6 +14,7 @@ export type RawPost = {
   likeCount: number;
   commentCount: number;
   creationDate: Date;
+  descriptionVector: number[],
 };
 
 export type Post = Omit<RawPost, "userId"> & {
