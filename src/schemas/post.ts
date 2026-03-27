@@ -7,6 +7,7 @@ const CursorSchema = z.object({
 });
 
 export const GetAllPostsQueryParamsSchema = z.object({
+  userId: IdSchema.optional(),
   cursor: z
     .string()
     .optional()

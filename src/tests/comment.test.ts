@@ -1,14 +1,14 @@
 import { Express } from "express";
 import mongoose from "mongoose";
 import request from "supertest";
-import initApp from "../../index";
-import commentModel from "../../models/commentModel";
-import postModel from "../../models/postModel";
-import type { Tokens } from "../../types/token";
-import { POSTS } from "../posts/consts";
-import { getCookieSetters, setupMultipleUsersForTests } from "../utils";
+import initApp from "../index";
+import commentModel from "../models/commentModel";
+import postModel from "../models/postModel";
+import type { Tokens } from "../types/token";
+import { getCookieSetters, setupMultipleUsersForTests } from "./utils";
 import { COMMENTS } from "./consts";
-import { CommentInputWithUserAndPostIds } from "./types";
+import type { CommentInputWithUserAndPostIds } from "./types";
+import { POSTS } from "./consts";
 
 let app: Express;
 let userTokens: Tokens[] = [];
@@ -30,6 +30,10 @@ beforeAll(async () => {
 
   const posts = await postModel.create(postsWithUserId);
   postIds = posts.map((post) => post._id.toString());
+});
+
+beforeEach(async () => {
+  await commentModel.deleteMany();
 });
 
 describe("Create comment", () => {

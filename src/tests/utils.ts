@@ -5,7 +5,9 @@ import { accessTokenCookieName, refreshTokenCookieName } from "../consts";
 import userModel from "../models/userModel";
 import type { TokenPayload, Tokens } from "../types/token";
 import type { UserInput } from "../types/user";
-import { USERS } from "./consts";
+import { POSTS, USERS } from "./consts";
+import postModel from "../models/postModel";
+import type { PostInputWithUserId } from "./types";
 
 type UserIdsAndToken = { userTokens: Tokens[]; userIds: string[] };
 
@@ -22,6 +24,28 @@ export const setupMultipleUsersForTests = async (
   );
 
   return { userTokens, userIds };
+};
+
+export const setupDifferentUsersPosts = async (userIds: string[]) => {
+  const postsToInsert: PostInputWithUserId[] = POSTS.map((post, index) => ({
+    ...post,
+    userId: userIds[index],
+  }));
+
+  const createdPosts = await postModel.create(postsToInsert);
+
+  return createdPosts[0].toObject()._id.toString();
+};
+
+export const setupSameUserPosts = async (userId: string) => {
+  const postsToInsert: PostInputWithUserId[] = POSTS.map((post) => ({
+    ...post,
+    userId,
+  }));
+
+  const createdPosts = await postModel.create(postsToInsert);
+
+  return createdPosts[0].toObject()._id.toString();
 };
 
 export const getUserToken = async (

@@ -55,14 +55,15 @@ class PostController extends BaseController<RawPost> {
 
     override async getAll(req: AuthRequest, res: Response) {
         try {
-            const {cursor} = GetAllPostsQueryParamsSchema.parse(req.query);
+            const {cursor, userId } = GetAllPostsQueryParamsSchema.parse(req.query);
 
             const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
             const posts = await this.model.aggregate<Post>([
                 {
                     $match: {
-                        ...(cursor && {
+                        ...(userId && { userId }),
+            ...(cursor && {
                             $or: [
                                 {creationDate: {$lt: cursor.creationDate}},
                                 {
