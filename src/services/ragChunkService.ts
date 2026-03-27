@@ -8,10 +8,6 @@ class RagChunkService {
     private textEmbedder: FeatureExtractionPipeline | null = null;
 
     constructor() {
-        this.init();
-    }
-
-    init() {
         ragChunksModel.createSearchIndex({
             name: "vector_search",
             type: "vectorSearch",
@@ -33,7 +29,7 @@ class RagChunkService {
         const embeddings = await this.generateEmbeddings(chunks);
 
         embeddings.map((embedding, chunkIndex) => {
-             ragChunksModel.create({
+            ragChunksModel.create({
                 postId: post._id,
                 embedding,
                 chunkIndex,
@@ -43,7 +39,7 @@ class RagChunkService {
     }
 
     deleteRagChunksForPost = async (postId: mongoose.Types.ObjectId): Promise<void> => {
-        await ragChunksModel.deleteMany({ postId: postId });
+        await ragChunksModel.deleteMany({postId: postId});
     }
 
     updateRagChunksForPost = async (post: PostRagData): Promise<void> => {
@@ -81,4 +77,4 @@ class RagChunkService {
     }
 }
 
-export default new RagChunkService()
+export default new RagChunkService();
