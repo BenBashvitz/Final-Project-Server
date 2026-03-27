@@ -22,8 +22,14 @@ const config = z
             .refine((value) => value > 0, {
                 message: "POSTS_PAGE_SIZE must be a positive number",
             }),
-        RAG_CHUNK_SIZE: z.number(),
-        RAG_CHUNK_OVERLAP: z.number(),
+        RAG_CHUNK_SIZE: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
+        RAG_CHUNK_OVERLAP: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
     })
     .parse(process.env);
 
