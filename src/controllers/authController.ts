@@ -4,12 +4,14 @@ import jwt from "jsonwebtoken";
 import {MongoServerError} from "mongodb";
 import z, {ZodError} from "zod";
 import config from "../configs/envVar";
+import envVar from "../configs/envVar";
 import {accessTokenCookieName, refreshTokenCookieName} from "../consts";
 import userModel from "../models/userModel";
-import {LoginSchema, RefreshTokenSchema, RegisterSchema,} from "../schemas/auth";
+import {GoogleSignInSchema, LoginSchema, RefreshTokenSchema, RegisterSchema,} from "../schemas/auth";
 import {AuthRequest, ResponseErrorMessage} from "../types/request";
 import type {TokenPayload, Tokens} from "../types/token";
 import type {UserDocument} from "../types/user";
+import {OAuth2Client} from "google-auth-library";
 
 const setTokens = (
     res: Response,
@@ -191,9 +193,50 @@ const logout = async (req: AuthRequest, res: Response) => {
     }
 };
 
+
+const googleSignIn = async (req: Request, res: Response) => {
+    try {
+        const client = new OAuth2Client();
+
+        const {credential} = GoogleSignInSchema.parse(req.body);
+
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: envVar.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const email = payload?.email;
+
+        if (!email) return res.status(500).send("Error signing in with Google.");
+
+        let user = await userModel.findOne({email});
+        let status = 200;
+
+        if (!user) {
+            status = 201
+            user = await userModel.create({
+                email,
+                username: email,
+                imgUrl: payload?.picture,
+            });
+        }
+
+        return saveTokensAndSendResponse(user, res, status);
+    } catch (error) {
+        if (error instanceof ZodError) {
+            return res.status(400).send(z.treeifyError(error));
+        }
+
+        console.error("Google sign-in error: ", error);
+        return res.status(500).send("Error signing in with Google.");
+    }
+};
+
 export default {
     register,
     login,
     refreshToken,
     logout,
+    googleSignIn
 };

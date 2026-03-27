@@ -22,6 +22,7 @@ const config = z
             .refine((value) => value > 0, {
                 message: "POSTS_PAGE_SIZE must be a positive number",
             }),
+        GOOGLE_CLIENT_ID: z.string(),
         RAG_CHUNK_SIZE: z
             .string()
             .regex(/^\d+$/)
