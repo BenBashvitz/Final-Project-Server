@@ -14,6 +14,8 @@ import {
 import { AuthRequest, ResponseErrorMessage } from "../types/request";
 import type { TokenPayload, Tokens } from "../types/token";
 import type { UserDocument } from "../types/user";
+import { OAuth2Client } from "google-auth-library";
+import {clientId} from "../firebase/firebase";
 
 const setTokens = (
   res: Response,
@@ -195,9 +197,50 @@ const logout = async (req: AuthRequest, res: Response) => {
   }
 };
 
+
+const googleSignIn = async (req: Request, res: Response) => {
+  try {
+    const client = new OAuth2Client();
+
+    const ticket = await client.verifyIdToken({
+      idToken: req.body.credential,
+      audience: clientId,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+
+    if (email) {
+      let user = await userModel.findOne({ email });
+
+      if (!user) {
+        user = await userModel.create({
+          email,
+          password: " ",
+          username: email,
+          imgUrl: payload?.picture,
+        });
+      }
+
+      const tokens = generateTokens(user?._id.toString() ?? "");
+
+      return res.status(201).send({
+        _id: user._id,
+        email: user.email,
+        imgUrl: user.imgUrl,
+        ...tokens,
+      });
+    }
+  } catch (error) {
+    console.error("Google sign-in error: ", error);
+    return res.status(500).send("Error signing in with Google.");
+  }
+};
+
 export default {
   register,
   login,
   refreshToken,
   logout,
+  googleSignIn
 };
