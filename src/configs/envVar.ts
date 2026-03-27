@@ -25,6 +25,7 @@ const config = z
         GOOGLE_CLIENT_ID: z.string(),
         LM_STUDIO_URL: z.string(),
         GEMINI_API_KEY: z.string(),
+        RAG_CHUNK_SIZE: z.number(),
     })
     .parse(process.env);
 

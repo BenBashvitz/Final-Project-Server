@@ -29,9 +29,6 @@ const postSchema = new mongoose.Schema<RawPost>({
         ref: "user",
         required: true,
     },
-    descriptionVector: {
-        type: [Number],
-    }
 });
 
 postSchema.index({
@@ -39,21 +36,4 @@ postSchema.index({
     _id: -1,
 });
 
-const model = mongoose.model("post", postSchema);
-
-model.createSearchIndex({
-    name: "vector_search",
-    type: "vectorSearch",
-    definition: {
-        fields: [
-            {
-                type: 'vector',
-                path: "descriptionVector",
-                numDimensions: 384,
-                similarity: 'cosine'
-            }
-        ]
-    }
-})
-
-export default model
+export default mongoose.model("post", postSchema);

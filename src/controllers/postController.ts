@@ -11,8 +11,7 @@ import {Post, PostPage, RawPost} from "../types/post";
 import {AuthRequest} from "../types/request";
 import {removeFile} from "../utils/removeLocalFile";
 import BaseController from "./baseController";
-import aiService from '../services/aiService';
-import computeCosineSimilarity from 'compute-cosine-similarity';
+import ragChunkService from "../services/ragChunkService";
 
 class PostController extends BaseController<RawPost> {
     constructor() {
@@ -55,15 +54,15 @@ class PostController extends BaseController<RawPost> {
 
     override async getAll(req: AuthRequest, res: Response) {
         try {
-            const {cursor, userId } = GetAllPostsQueryParamsSchema.parse(req.query);
+            const {cursor, userId} = GetAllPostsQueryParamsSchema.parse(req.query);
 
             const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
             const posts = await this.model.aggregate<Post>([
                 {
                     $match: {
-                        ...(userId && { userId }),
-            ...(cursor && {
+                        ...(userId && {userId}),
+                        ...(cursor && {
                             $or: [
                                 {creationDate: {$lt: cursor.creationDate}},
                                 {
@@ -125,19 +124,17 @@ class PostController extends BaseController<RawPost> {
 
             const currentUserId = new mongoose.Types.ObjectId(userId);
 
-            const descriptionVector = await aiService.getTextVector(postInput.description)
-
             const inserted = await this.model.create({
                 ...postInput,
                 userId: currentUserId,
-                descriptionVector,
             });
+
+            await ragChunkService.saveRagChunksForPost(inserted.toObject())
 
             const [enrichedPost] = await this.model.aggregate<Post>([
                 {$match: {_id: inserted._id}},
                 ...this.getEnrichmentPipeline(currentUserId),
             ]);
-
 
 
             return res.status(201).json(enrichedPost);
@@ -171,11 +168,8 @@ class PostController extends BaseController<RawPost> {
 
             const postUpdate = UpdatePostBodySchema.parse(req.body);
 
-            const descriptionVector = await aiService.getTextVector(postUpdate.description)
-
             const updatedData = await this.model.findByIdAndUpdate(id, {
                 ...postUpdate,
-                descriptionVector,
             }, {
                 new: true,
                 runValidators: true,
@@ -185,6 +179,8 @@ class PostController extends BaseController<RawPost> {
             if (!updatedData) {
                 return res.status(404).send(`The post was not found`);
             }
+
+            await ragChunkService.updateRagChunksForPost(updatedData.toObject())
 
             return res.status(200).json(updatedData);
         } catch (error) {
@@ -231,6 +227,7 @@ class PostController extends BaseController<RawPost> {
                     );
                 });
                 await likeModel.deleteMany({postId: deletedData._id});
+                await ragChunkService.deleteRagChunksForPost(deletedData._id);
 
                 res.status(200).json({_id: deletedData._id});
             } else {
@@ -244,21 +241,6 @@ class PostController extends BaseController<RawPost> {
             console.error(`An error occurred while deleting post`, error);
             res.status(500).send(`An error occurred while deleting post`);
         }
-    }
-
-    async searchPosts(req: Request, res: Response) {
-        const query = "";
-        const queryVector = await aiService.getTextVector(query);
-        const posts = await this.model.find({});
-
-        const scoredPosts: (RawPost & {similarityToQuery: number})[] = posts.map(post => ({
-            ...post.toObject(),
-            similarityToQuery: computeCosineSimilarity(post.descriptionVector, queryVector) ?? -1
-        }));
-
-        const relevantPostsBySimilarity = scoredPosts.filter(({similarityToQuery}) => similarityToQuery > 0.7).sort((a, b) => a.similarityToQuery - b.similarityToQuery);
-
-        return aiService.verifyPostsWithLLM(relevantPostsBySimilarity, query);
     }
 }
 

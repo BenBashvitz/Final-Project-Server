@@ -14,7 +14,6 @@ export type RawPost = {
   likeCount: number;
   commentCount: number;
   creationDate: Date;
-  descriptionVector: number[],
 };
 
 export type Post = Omit<RawPost, "userId"> & {
@@ -26,3 +25,5 @@ export type PostPage = {
   posts: Post[];
   cursor: Cursor | null;
 };
+
+export type PostRagData = Pick<RawPost, '_id' | 'description'>
