@@ -168,9 +168,7 @@ class PostController extends BaseController<RawPost> {
 
             const postUpdate = UpdatePostBodySchema.parse(req.body);
 
-            const updatedData = await this.model.findByIdAndUpdate(id, {
-                ...postUpdate,
-            }, {
+            const updatedData = await this.model.findByIdAndUpdate(id, postUpdate, {
                 new: true,
                 runValidators: true,
                 projection: {_id: 1, description: 1, imgUrl: 1},
