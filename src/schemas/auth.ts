@@ -18,3 +18,7 @@ export const RefreshTokenSchema = z.object({
 export const AccessTokenSchema = z.object({
     [accessTokenCookieName]: z.jwt(),
 })
+
+export const GoogleSignInSchema = z.object({
+    credential: z.string(),
+})

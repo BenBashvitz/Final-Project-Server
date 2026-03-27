@@ -7,6 +7,7 @@ import config from "../configs/envVar";
 import { accessTokenCookieName, refreshTokenCookieName } from "../consts";
 import userModel from "../models/userModel";
 import {
+  GoogleSignInSchema,
   LoginSchema,
   RefreshTokenSchema,
   RegisterSchema,
@@ -15,7 +16,7 @@ import { AuthRequest, ResponseErrorMessage } from "../types/request";
 import type { TokenPayload, Tokens } from "../types/token";
 import type { UserDocument } from "../types/user";
 import { OAuth2Client } from "google-auth-library";
-import {clientId} from "../firebase/firebase";
+import envVar from "../configs/envVar";
 
 const setTokens = (
   res: Response,
@@ -202,9 +203,11 @@ const googleSignIn = async (req: Request, res: Response) => {
   try {
     const client = new OAuth2Client();
 
+    const { credential } = GoogleSignInSchema.parse(req.body);
+
     const ticket = await client.verifyIdToken({
-      idToken: req.body.credential,
-      audience: clientId,
+      idToken: credential,
+      audience: envVar.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -232,6 +235,10 @@ const googleSignIn = async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).send(z.treeifyError(error));
+    }
+
     console.error("Google sign-in error: ", error);
     return res.status(500).send("Error signing in with Google.");
   }

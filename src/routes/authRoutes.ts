@@ -166,21 +166,25 @@ router.post("/logout", authMiddleware, authController.logout);
 
 /**
  * @swagger
- * /auth/logout:
+ * /auth/google:
  *   post:
- *     summary: Logout a user
+ *     summary: Sign in using Google
  *     tags: [Auth]
- *     security:
- *       - accessToken: []
  *     responses:
  *       200:
- *         description: Logged out successfully
- *       401:
- *         description: Unauthorized - Invalid access token
+ *         description: Signed in successfully
+ *       400:
+ *         description: Bad request - Invalid input
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/ZodTreeError'
+ *             example:
+ *               errors: []
+ *               properties:
+ *                 credential:
+ *                   errors:
+ *                     - Invalid input: expected string, received undefined
  *       500:
  *         description: Internal Server Error
  *         content:
