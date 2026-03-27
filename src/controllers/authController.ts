@@ -110,7 +110,7 @@ const login = async (req: Request, res: Response) => {
 
         const user = await userModel.findOne({username});
 
-        if (!user) {
+        if (!user || !user.password) {
             return res
                 .status(401)
                 .send(ResponseErrorMessage.INVALID_LOGIN_CREDENTIALS);
@@ -118,7 +118,7 @@ const login = async (req: Request, res: Response) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
 
-        if (!isMatch || !user.password) {
+        if (!isMatch) {
             return res
                 .status(401)
                 .send(ResponseErrorMessage.INVALID_LOGIN_CREDENTIALS);
