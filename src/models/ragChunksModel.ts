@@ -21,21 +21,4 @@ const ragChunksSchema = new mongoose.Schema<RawRagChunk>({
     },
 });
 
-const model = mongoose.model("ragChunks", ragChunksSchema);
-
-model.createSearchIndex({
-    name: "vector_search",
-    type: "vectorSearch",
-    definition: {
-        fields: [
-            {
-                type: 'vector',
-                path: "embedding",
-                numDimensions: 384,
-                similarity: 'cosine'
-            }
-        ]
-    }
-})
-
-export default model;
+export default mongoose.model("ragChunks", ragChunksSchema);
