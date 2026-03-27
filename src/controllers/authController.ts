@@ -118,7 +118,7 @@ const login = async (req: Request, res: Response) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
 
-        if (!isMatch) {
+        if (!isMatch || !user.password) {
             return res
                 .status(401)
                 .send(ResponseErrorMessage.INVALID_LOGIN_CREDENTIALS);
@@ -217,7 +217,6 @@ const googleSignIn = async (req: Request, res: Response) => {
             status = 201
             user = await userModel.create({
                 email,
-                password: " ",
                 username: email,
                 imgUrl: payload?.picture,
             });
