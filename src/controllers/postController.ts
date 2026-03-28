@@ -6,12 +6,18 @@ import {USER_LOOKUP_PIPELINE_STAGE} from "../consts";
 import likeModel from "../models/likeModel";
 import postModel from "../models/postModel";
 import {IdParamSchema} from "../schemas/common";
-import {GetAllPostsQueryParamsSchema, PostInputSchema, UpdatePostBodySchema,} from "../schemas/post";
+import {
+    GetAllPostsQueryParamsSchema,
+    GetRelevantPostsByQuerySchema,
+    PostInputSchema,
+    UpdatePostBodySchema,
+} from "../schemas/post";
 import {Post, PostPage, RawPost} from "../types/post";
 import {AuthRequest} from "../types/request";
 import {removeFile} from "../utils/removeLocalFile";
 import BaseController from "./baseController";
 import ragChunkService from "../services/ragChunkService";
+import aiService from "../services/aiService";
 
 class PostController extends BaseController<RawPost> {
     constructor() {
@@ -238,6 +244,23 @@ class PostController extends BaseController<RawPost> {
 
             console.error(`An error occurred while deleting post`, error);
             res.status(500).send(`An error occurred while deleting post`);
+        }
+    }
+
+    async getRelevantPosts(req: AuthRequest, res: Response) {
+        try {
+            const {query} = GetRelevantPostsByQuerySchema.parse(req.query);
+
+            const relevantPosts = await aiService.getRelevantPosts(query);
+
+            res.status(200).json(relevantPosts);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).send(z.treeifyError(error));
+            }
+
+            console.error(`An error occurred while fetching relevant posts`, error);
+            res.status(500).send(`An error occurred while fetching relevant posts`);
         }
     }
 }

@@ -1,8 +1,11 @@
-import {PostRagData} from "../types/post";
+import {PostRagData, RawPost} from "../types/post";
 import envVar from "../configs/envVar";
 import {FeatureExtractionPipeline, pipeline} from "@xenova/transformers";
 import ragChunksModel from "../models/ragChunksModel";
 import mongoose from "mongoose";
+import {ScoredRagChunk} from "../types/ragChunks";
+import score from 'compute-cosine-similarity';
+import postModel from "../models/postModel";
 
 class RagChunkService {
     private textEmbedder: FeatureExtractionPipeline | null = null;
@@ -30,6 +33,40 @@ class RagChunkService {
         await this.saveRagChunksForPost(post);
     }
 
+    topKPostsByQuery = async (query: string): Promise<RawPost[]> => {
+        const scoredRagChunks = await this.scoredAndSortedRagChunksByQuery(query);
+
+        const postIds: mongoose.Types.ObjectId[] = [];
+
+        scoredRagChunks.forEach(ragChunk => {
+            if(!postIds.includes(ragChunk.postId)){
+                postIds.push(ragChunk.postId);
+            }
+        })
+
+        const topKPostIds = postIds.slice(0, envVar.RAG_TOP_K);
+
+        const topKPosts = await postModel.find({
+            _id: {
+                $in: topKPostIds,
+            },
+        })
+
+        return topKPosts.map(post => post.toObject())
+    }
+
+    private scoredAndSortedRagChunksByQuery = async (query: string): Promise<ScoredRagChunk[]> => {
+        const queryEmbedding = await this.generateEmbedding(query);
+        const ragChunks = await ragChunksModel.find({}).limit(envVar.RAG_NUM_OF_CANDIDATES);
+
+        const scoredRagChunks = ragChunks.map(ragChunk => ({
+            ...ragChunk.toObject(),
+            score: score(ragChunk.embedding, queryEmbedding) ?? -1,
+        }))
+
+        return scoredRagChunks.sort((a, b) => b.score - a.score);
+    }
+
     private generateEmbeddings = (chunks: string[]): Promise<number[][]> => {
         return Promise.all(chunks.map(chunk => this.generateEmbedding(chunk)))
     }
@@ -52,7 +89,7 @@ class RagChunkService {
 
         for (let i = 0; i < Math.ceil(data.length / envVar.RAG_CHUNK_SIZE); i++) {
             const start = i * (envVar.RAG_CHUNK_SIZE - envVar.RAG_CHUNK_OVERLAP);
-            const end = Math.min((i + 1) * (envVar.RAG_CHUNK_SIZE - envVar.RAG_CHUNK_OVERLAP), data.length);
+            const end = Math.min(start + envVar.RAG_CHUNK_SIZE, data.length);
             chunks.push(data.slice(start, end))
         }
 

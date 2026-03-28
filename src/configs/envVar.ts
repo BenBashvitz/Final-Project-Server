@@ -31,6 +31,20 @@ const config = z
             .string()
             .regex(/^\d+$/)
             .transform(Number),
+        RAG_NUM_OF_CANDIDATES: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
+        RAG_TOP_K: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
+        MINIMUM_RELEVANT_POSTS: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
+        LM_STUDIO_URL: z.string(),
+        GEMINI_API_KEY: z.string(),
     })
     .parse(process.env);
 

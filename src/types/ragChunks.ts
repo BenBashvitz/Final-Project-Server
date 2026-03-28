@@ -9,3 +9,7 @@ export type RawRagChunk = {
 }
 
 export type RagChunk = Omit<RawRagChunk, "_id">;
+
+export type ScoredRagChunk = RawRagChunk & {
+    score: number
+}
