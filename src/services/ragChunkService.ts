@@ -7,23 +7,6 @@ import mongoose from "mongoose";
 class RagChunkService {
     private textEmbedder: FeatureExtractionPipeline | null = null;
 
-    constructor() {
-        ragChunksModel.createSearchIndex({
-            name: "vector_search",
-            type: "vectorSearch",
-            definition: {
-                fields: [
-                    {
-                        type: 'vector',
-                        path: "embedding",
-                        numDimensions: 384,
-                        similarity: 'cosine'
-                    }
-                ]
-            }
-        })
-    }
-
     saveRagChunksForPost = async (post: PostRagData): Promise<void> => {
         const chunks = this.chunkData(post.description);
         const embeddings = await this.generateEmbeddings(chunks);
