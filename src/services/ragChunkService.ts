@@ -52,7 +52,7 @@ class RagChunkService {
 
         for (let i = 0; i < Math.ceil(data.length / envVar.RAG_CHUNK_SIZE); i++) {
             const start = i * (envVar.RAG_CHUNK_SIZE - envVar.RAG_CHUNK_OVERLAP);
-            const end = Math.min((i + 1) * (envVar.RAG_CHUNK_SIZE - envVar.RAG_CHUNK_OVERLAP), data.length);
+            const end = Math.min(start + envVar.RAG_CHUNK_SIZE, data.length);
             chunks.push(data.slice(start, end))
         }
 
