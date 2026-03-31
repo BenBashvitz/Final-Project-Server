@@ -295,7 +295,7 @@ router.delete(
  *         description: The user query
  *     responses:
  *       200:
- *         description: Top posts relevant to the user query
+ *         description: Relevant posts to the user query
  *         content:
  *           application/json:
  *             schema:
