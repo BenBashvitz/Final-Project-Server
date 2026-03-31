@@ -25,3 +25,5 @@ export type PostPage = {
   posts: Post[];
   cursor: Cursor | null;
 };
+
+export type PostRagData = Pick<RawPost, '_id' | 'description'>

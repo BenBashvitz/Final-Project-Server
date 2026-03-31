@@ -1,36 +1,39 @@
 import mongoose from "mongoose";
-import { RawPost } from "../types/post";
+import {RawPost} from "../types/post";
 
 const postSchema = new mongoose.Schema<RawPost>({
-  description: {
-    type: String,
-    required: true,
-  },
-  imgUrl: {
-    type: String,
-    required: true,
-  },
-  creationDate: {
-    type: Date,
-    required: true,
-  },
-  likeCount: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
-  commentCount: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
-    required: true,
-  },
+    description: {
+        type: String,
+        required: true,
+    },
+    imgUrl: {
+        type: String,
+        required: true,
+    },
+    creationDate: {
+        type: Date,
+        required: true,
+    },
+    likeCount: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
+    commentCount: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: true,
+    },
 });
 
-postSchema.index({ creationDate: -1, _id: -1 });
+postSchema.index({
+    creationDate: -1,
+    _id: -1,
+});
 
 export default mongoose.model("post", postSchema);
