@@ -1,6 +1,6 @@
-import {RawPost} from "../types/post";
+import { RawPost } from "../types/post";
 import envVar from "../configs/envVar";
-import {GoogleGenerativeAI} from '@google/generative-ai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import ragChunkService from "./ragChunkService";
 
 class AiService {
@@ -11,7 +11,7 @@ class AiService {
     }
 
     private getRelevantPostsWithIterations = async (previousRelevantPosts: RawPost[], userQuery: string, iterationCount: number = 3): Promise<RawPost[]> => {
-        if (iterationCount < 0) return previousRelevantPosts;
+        if (iterationCount <= 0) return previousRelevantPosts;
 
         const topKPosts = await ragChunkService.topKPostsByQuery(userQuery);
 
@@ -19,7 +19,7 @@ class AiService {
             User Query: "${userQuery}"
             Return ONLY a JSON array of indices for relevant posts.
             Posts:
-            ${topKPosts.map((post, i) => `[Index: ${i}] ${post.description}`).join("\n")}
+            ${topKPosts.map((post, i) => `[Index: ${i}] The post description: ${post.description}`).join("\n")}
         `;
 
         try {
@@ -42,6 +42,10 @@ class AiService {
             return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, iterationCount - 1);
         } catch (error) {
             console.error("All LLM providers failed. Returning original results as fallback. ", error);
+            if (previousRelevantPosts.length > 0) {
+                return previousRelevantPosts;
+            }
+
             return topKPosts;
         }
     }
@@ -49,24 +53,30 @@ class AiService {
     private filterPosts(posts: RawPost[], indices: number[]) {
         if (!Array.isArray(indices)) return posts;
 
-        return posts.filter((_, index) => indices.includes(index));
+        const filteredPosts: RawPost[] = []
+
+        indices.forEach(index => {
+            if (posts[index]) filteredPosts.push(posts[index])
+        })
+
+        return filteredPosts;
     }
 
-    private async callGemini(prompt: string) {
-        const model = this.genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+    private async callGemini(prompt: string): Promise<number[]> {
+        const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         const text = result.response.text();
         const cleanedJson = text.replace(/```json|```/g, "").trim();
         return JSON.parse(cleanedJson);
     }
 
-    private async callLMStudio(prompt: string) {
+    private async callLMStudio(prompt: string): Promise<number[]> {
         const response = await fetch(`${envVar.LM_STUDIO_URL}/v1/chat/completions`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "local-model",
-                messages: [{role: "user", content: prompt}],
+                messages: [{ role: "user", content: prompt }],
                 temperature: 0,
             }),
         });

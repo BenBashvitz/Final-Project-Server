@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import z from "zod";
 
-dotenv.config({path: ".env.dev"});
+dotenv.config({ path: ".env.dev" });
 
 const config = z
     .object({
@@ -36,6 +36,10 @@ const config = z
             .regex(/^\d+$/)
             .transform(Number),
         RAG_TOP_K: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
+        RAG_THRESHOLD: z
             .string()
             .regex(/^\d+$/)
             .transform(Number),
