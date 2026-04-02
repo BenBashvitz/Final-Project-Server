@@ -2,44 +2,56 @@ import { RawPost } from "../types/post";
 import envVar from "../configs/envVar";
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import ragChunkService from "./ragChunkService";
+import { RagChunkPageOptions } from "../types/ragChunks";
 
 class AiService {
     private genAI: GoogleGenerativeAI = new GoogleGenerativeAI(envVar.GEMINI_API_KEY);
+    private numberOfRetries = 3
 
     getRelevantPosts = async (userQuery: string): Promise<RawPost[]> => {
-        return this.getRelevantPostsWithIterations([], userQuery);
+        return this.getRelevantPostsWithIterations([], userQuery, {
+            retryCount: 0,
+            nextId: null
+        });
     }
 
-    private getRelevantPostsWithIterations = async (previousRelevantPosts: RawPost[], userQuery: string, iterationCount: number = 3): Promise<RawPost[]> => {
-        if (iterationCount <= 0) return previousRelevantPosts;
+    private getRelevantPostsWithIterations = async (previousRelevantPosts: RawPost[], userQuery: string, options: RagChunkPageOptions): Promise<RawPost[]> => {
+        if (options.retryCount >= this.numberOfRetries || (options.retryCount > 0 && options.nextId === null)) return previousRelevantPosts;
 
-        const topKPosts = await ragChunkService.topKPostsByQuery(userQuery);
+        const { posts, nextRagChunkId } = await ragChunkService.topKPostsByQuery(userQuery, options);
 
         const prompt = `
             User Query: "${userQuery}"
             Return ONLY a JSON array of indices for relevant posts.
             Posts:
-            ${topKPosts.map((post, i) => `[Index: ${i}] The post description: ${post.description}`).join("\n")}
+            ${posts.map((post, i) => `[Index: ${i}] The post description: ${post.description}`).join("\n")}
         `;
 
         try {
             const indices = await this.callGemini(prompt);
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(topKPosts, indices));
+
+            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(previousRelevantPosts, posts, indices));
 
             if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
 
-            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, iterationCount - 1);
+            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, {
+                retryCount: options.retryCount + 1,
+                nextId: nextRagChunkId
+            });
         } catch (error) {
             console.warn("Gemini failed. Switching to Local Model (LM Studio)...", error);
         }
 
         try {
             const indices = await this.callLMStudio(prompt);
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(topKPosts, indices));
+            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(previousRelevantPosts, posts, indices));
 
             if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
 
-            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, iterationCount - 1);
+            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, {
+                nextId: nextRagChunkId,
+                retryCount: options.retryCount + 1
+            });
         } catch (error) {
             if (previousRelevantPosts.length > 0) {
                 console.error("All LLM providers failed. Returning relevant posts", error);
@@ -49,17 +61,17 @@ class AiService {
 
             console.error("All LLM providers failed. Returning original results as fallback. ", error);
 
-            return topKPosts;
+            return posts;
         }
     }
 
-    private filterPostsByRelevantPostIndices(posts: RawPost[], indices: number[]): RawPost[] {
+    private filterPostsByRelevantPostIndices(previousPosts: RawPost[], posts: RawPost[], indices: number[]): RawPost[] {
         if (!Array.isArray(indices)) return posts;
 
         const filteredPosts: RawPost[] = []
 
         indices.forEach(index => {
-            if (posts[index]) filteredPosts.push(posts[index])
+            if (posts[index] && !previousPosts.includes(posts[index])) filteredPosts.push(posts[index])
         })
 
         return filteredPosts;
