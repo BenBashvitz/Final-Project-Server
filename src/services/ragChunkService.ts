@@ -36,15 +36,8 @@ class RagChunkService {
     topKPostsByQuery = async (query: string): Promise<RawPost[]> => {
         const scoredRagChunks = await this.scoredAndSortedRagChunksByQuery(query);
 
-        const postIds: mongoose.Types.ObjectId[] = [];
-
-        scoredRagChunks.forEach(ragChunk => {
-            if (!postIds.includes(ragChunk.postId)) {
-                postIds.push(ragChunk.postId);
-            }
-        })
-
-        const topKPostIds = postIds.slice(0, envVar.RAG_TOP_K);
+        const uniquePostIdStrings = Array.from(new Set(scoredRagChunks.map(chunk => chunk.postId.toString())));
+        const topKPostIds = uniquePostIdStrings.slice(0, envVar.RAG_TOP_K).map(id => new mongoose.Types.ObjectId(id));
 
         const topKPosts = await postModel.find({
             _id: {

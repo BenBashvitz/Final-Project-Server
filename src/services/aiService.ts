@@ -24,7 +24,7 @@ class AiService {
 
         try {
             const indices = await this.callGemini(prompt);
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPosts(topKPosts, indices));
+            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(topKPosts, indices));
 
             if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
 
@@ -35,22 +35,25 @@ class AiService {
 
         try {
             const indices = await this.callLMStudio(prompt);
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPosts(topKPosts, indices));
+            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(topKPosts, indices));
 
             if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
 
             return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, iterationCount - 1);
         } catch (error) {
-            console.error("All LLM providers failed. Returning original results as fallback. ", error);
             if (previousRelevantPosts.length > 0) {
+                console.error("All LLM providers failed. Returning relevant posts", error);
+
                 return previousRelevantPosts;
             }
+
+            console.error("All LLM providers failed. Returning original results as fallback. ", error);
 
             return topKPosts;
         }
     }
 
-    private filterPosts(posts: RawPost[], indices: number[]) {
+    private filterPostsByRelevantPostIndices(posts: RawPost[], indices: number[]): RawPost[] {
         if (!Array.isArray(indices)) return posts;
 
         const filteredPosts: RawPost[] = []

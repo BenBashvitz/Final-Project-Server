@@ -41,7 +41,7 @@ const config = z
             .transform(Number),
         RAG_THRESHOLD: z
             .string()
-            .regex(/^\d+$/)
+            .regex(/^0\.\d+$/)
             .transform(Number),
         MINIMUM_RELEVANT_POSTS: z
             .string()

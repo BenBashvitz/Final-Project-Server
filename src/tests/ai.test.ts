@@ -104,7 +104,7 @@ describe("AiService", () => {
             expect(mockGenerateContent).toHaveBeenCalledTimes(2);
         });
 
-        it("should handle invalid JSON from LLM by throwing or falling back", async () => {
+        it("should handle invalid JSON from Gemini by falling back to Local Model", async () => {
             (ragChunkService.topKPostsByQuery as jest.Mock).mockResolvedValue(mockTopKPosts);
             mockGenerateContent.mockResolvedValue({
                 response: { text: () => "Not a JSON" }
