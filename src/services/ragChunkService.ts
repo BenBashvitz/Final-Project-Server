@@ -63,6 +63,8 @@ class RagChunkService {
         { $sort: { _id: -1 } },
         { $limit: envVar.RAG_NUM_OF_CANDIDATES + 1 }]);
 
+
+
         const scoredRagChunks = ragChunks.map(ragChunk => ({
             ...ragChunk,
             score: score(ragChunk.embedding, queryEmbedding) ?? -1,
