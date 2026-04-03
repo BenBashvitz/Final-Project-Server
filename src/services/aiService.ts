@@ -6,7 +6,7 @@ import { RagChunkPageOptions } from "../types/ragChunks";
 
 class AiService {
     private genAI: GoogleGenerativeAI = new GoogleGenerativeAI(envVar.GEMINI_API_KEY);
-    private numberOfRetries = 3
+    private maxNumberOfRetries = envVar.RAG_MAX_NUMBER_OR_RETRIES;
 
     getRelevantPosts = async (userQuery: string): Promise<RawPost[]> => {
         return this.getRelevantPostsWithIterations([], userQuery, {
@@ -16,7 +16,7 @@ class AiService {
     }
 
     private getRelevantPostsWithIterations = async (previousRelevantPosts: RawPost[], userQuery: string, options: RagChunkPageOptions): Promise<RawPost[]> => {
-        if (options.retryCount >= this.numberOfRetries || (options.retryCount > 0 && options.nextId === null)) return previousRelevantPosts;
+        if (options.retryCount === this.maxNumberOfRetries || (options.retryCount > 0 && options.nextId === null)) return previousRelevantPosts;
 
         const { posts, nextRagChunkId } = await ragChunkService.topKPostsByQuery(userQuery, options);
 
@@ -66,7 +66,10 @@ class AiService {
     }
 
     private filterPostsByRelevantPostIndices(previousPosts: RawPost[], posts: RawPost[], indices: number[]): RawPost[] {
-        if (!Array.isArray(indices)) return posts;
+        if (!Array.isArray(indices)) {
+            console.error("The result from the LLM provider is not an array")
+            return posts;
+        }
 
         const filteredPosts: RawPost[] = []
 

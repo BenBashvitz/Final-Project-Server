@@ -68,7 +68,7 @@ class RagChunkService {
         const scoredRagChunks = ragChunks.map(ragChunk => ({
             ...ragChunk,
             score: score(ragChunk.embedding, queryEmbedding) ?? -1,
-        })).filter(({ score }) => score > envVar.RAG_THRESHOLD);
+        })).filter(({ score }, index, array) => (index !== array.length - 1) || score > envVar.RAG_THRESHOLD);
 
         return {
             ragChunks: scoredRagChunks.sort((a, b) => b.score - a.score),

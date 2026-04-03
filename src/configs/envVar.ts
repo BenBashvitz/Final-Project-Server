@@ -47,6 +47,10 @@ const config = z
             .string()
             .regex(/^\d+$/)
             .transform(Number),
+        RAG_MAX_NUMBER_OR_RETRIES: z
+            .string()
+            .regex(/^\d+$/)
+            .transform(Number),
         LM_STUDIO_URL: z.string(),
         GEMINI_API_KEY: z.string(),
     })
