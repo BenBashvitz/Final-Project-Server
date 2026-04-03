@@ -45,7 +45,7 @@ export const setupSameUserPosts = async (userId: string) => {
 
   const createdPosts = await postModel.create(postsToInsert);
 
-  return createdPosts[0].toObject()._id.toString();
+  return createdPosts;
 };
 
 export const getUserToken = async (
