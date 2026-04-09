@@ -86,14 +86,14 @@ describe("RagChunkService", () => {
         });
     });
 
-    describe("topKPostsByQuery", () => {
+    describe("topKRagChunksByQuery", () => {
         let posts: RawPost[]
 
         beforeEach(async () => {
             posts = await setupSameUserPosts(userIds[0])
         })
 
-        it("should retrieve top K relevant posts based on the query", async () => {
+        it("should retrieve top K relevant rag chunks based on the query", async () => {
             await ragChunksModel.create({
                 postId: posts[0]._id,
                 embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
@@ -108,16 +108,13 @@ describe("RagChunkService", () => {
                 text: "Post 2 chunk",
             });
 
-            const { posts: topPosts } = await ragChunkService.topKPostsByQuery("test query", {
-                retryCount: 0,
-                nextId: null
-            });
+            const { ragChunks: topChunks } = await ragChunkService.topKRagChunksByQuery("test query", null);
 
-            expect(topPosts.length).toBe(1);
-            expect(topPosts[0]._id.toString()).toBe(posts[0]._id.toString());
+            expect(topChunks.length).toBe(1);
+            expect(topChunks[0].postId.toString()).toBe(posts[0]._id.toString());
         });
 
-        it("should limit results to RAG_TOP_K distinct posts and avoid duplicates", async () => {
+        it("should limit results to RAG_TOP_K chunks", async () => {
             await ragChunksModel.create({
                 postId: posts[0]._id,
                 embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
@@ -140,15 +137,9 @@ describe("RagChunkService", () => {
                 });
             }
 
-            const { posts: topPosts } = await ragChunkService.topKPostsByQuery("test query", {
-                retryCount: 0,
-                nextId: null,
-            });
+            const { ragChunks: topChunks } = await ragChunkService.topKRagChunksByQuery("test query", null);
 
-            expect(topPosts.length).toBe(envVar.RAG_TOP_K);
-
-            const uniqueIds = new Set(topPosts.map(p => p._id.toString()));
-            expect(uniqueIds.size).toBe(envVar.RAG_TOP_K);
+            expect(topChunks.length).toBe(envVar.RAG_TOP_K);
         });
     });
 

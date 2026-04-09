@@ -1,11 +1,10 @@
-import { PostRagData, RawPost } from "../types/post";
+import {PostRagData} from "../types/post";
 import envVar from "../configs/envVar";
-import { FeatureExtractionPipeline, pipeline } from "@xenova/transformers";
+import {FeatureExtractionPipeline, pipeline} from "@xenova/transformers";
 import ragChunksModel from "../models/ragChunksModel";
 import mongoose from "mongoose";
-import { RagChunkPage, RagChunkPageOptions, RagChunkPostPage, RawRagChunk, ScoredRagChunk } from "../types/ragChunks";
+import {RagChunkPage, RawRagChunk} from "../types/ragChunks";
 import score from 'compute-cosine-similarity';
-import postModel from "../models/postModel";
 
 class RagChunkService {
     private textEmbedder: FeatureExtractionPipeline | null = null;
@@ -33,46 +32,43 @@ class RagChunkService {
         return await this.saveRagChunksForPost(post);
     }
 
-    topKPostsByQuery = async (query: string, options: RagChunkPageOptions): Promise<RagChunkPostPage> => {
-        const scoredRagChunksPage = await this.scoredAndSortedRagChunksByQuery(query, options);
+    topKRagChunksByQuery = async (query: string, nextId: mongoose.Types.ObjectId | null): Promise<RagChunkPage> => {
+        const scoredRagChunksPage = await this.scoredAndSortedRagChunksByQuery(query, nextId);
 
-        const uniquePostIdStrings = Array.from(new Set(scoredRagChunksPage.ragChunks.map(chunk => chunk.postId.toString())));
-        const topKPostIds = uniquePostIdStrings.slice(0, envVar.RAG_TOP_K).map(id => new mongoose.Types.ObjectId(id));
-
-        const topKPosts = await postModel.find({
-            _id: {
-                $in: topKPostIds,
-            },
-        })
+        const topKRagChunks = scoredRagChunksPage.ragChunks.slice(0, envVar.RAG_TOP_K);
 
         return {
-            posts: topKPosts,
-            nextRagChunkId: scoredRagChunksPage.nextId
+            ...scoredRagChunksPage,
+            ragChunks: topKRagChunks,
         }
     }
 
-    private scoredAndSortedRagChunksByQuery = async (query: string, options: RagChunkPageOptions): Promise<RagChunkPage> => {
+    private scoredAndSortedRagChunksByQuery = async (query: string, nextId: mongoose.Types.ObjectId | null): Promise<RagChunkPage> => {
         const queryEmbedding = await this.generateEmbedding(query);
         const ragChunks = await ragChunksModel.aggregate<RawRagChunk>([{
             $match: {
-                ...(options.retryCount > 0 && options.nextId !== null && {
-                    _id: { $lte: options.nextId },
+                ...(nextId !== null && {
+                    _id: { $lte: nextId },
                 })
             },
         },
         { $sort: { _id: -1 } },
         { $limit: envVar.RAG_NUM_OF_CANDIDATES + 1 }]);
 
+        const hasNextPage = ragChunks.length > envVar.RAG_NUM_OF_CANDIDATES
 
+        if(ragChunks.length > envVar.RAG_NUM_OF_CANDIDATES) {
+            ragChunks.pop()
+        }
 
         const scoredRagChunks = ragChunks.map(ragChunk => ({
             ...ragChunk,
             score: score(ragChunk.embedding, queryEmbedding) ?? -1,
-        })).filter(({ score }, index, array) => (index !== array.length - 1) || score > envVar.RAG_THRESHOLD);
+        })).filter(({ score }) => score > envVar.RAG_THRESHOLD);
 
         return {
             ragChunks: scoredRagChunks.sort((a, b) => b.score - a.score),
-            nextId: ragChunks[ragChunks.length - 1]._id
+            nextId: hasNextPage ? ragChunks[ragChunks.length - 1]._id : null
         };
     }
 

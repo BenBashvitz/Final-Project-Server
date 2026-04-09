@@ -1,100 +1,109 @@
-import { RawPost } from "../types/post";
+import {RawPost} from "../types/post";
 import envVar from "../configs/envVar";
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import {GoogleGenerativeAI} from '@google/generative-ai'
 import ragChunkService from "./ragChunkService";
-import { RagChunkPageOptions } from "../types/ragChunks";
+import mongoose from "mongoose";
+import {RawRagChunk} from "../types/ragChunks";
+import postModel from "../models/postModel";
 
 class AiService {
     private genAI: GoogleGenerativeAI = new GoogleGenerativeAI(envVar.GEMINI_API_KEY);
     private maxNumberOfRetries = envVar.RAG_MAX_NUMBER_OR_RETRIES;
 
     getRelevantPosts = async (userQuery: string): Promise<RawPost[]> => {
-        return this.getRelevantPostsWithIterations([], userQuery, {
-            retryCount: 0,
-            nextId: null
-        });
+        const relevantRagChunks = await this.getRelevantRagChunksWithIterations([], userQuery, null, 0,);
+
+        return postModel.find({
+            _id: {$in: relevantRagChunks.map(({postId}) => postId)}
+        })
     }
 
-    private getRelevantPostsWithIterations = async (previousRelevantPosts: RawPost[], userQuery: string, options: RagChunkPageOptions): Promise<RawPost[]> => {
-        if (options.retryCount === this.maxNumberOfRetries || (options.retryCount > 0 && options.nextId === null)) return previousRelevantPosts;
+    private getRelevantRagChunksWithIterations = async (previousRagChunks: RawRagChunk[], userQuery: string, nextId: mongoose.Types.ObjectId | null, retryCount = 3): Promise<RawRagChunk[]> => {
+        if (retryCount === this.maxNumberOfRetries || (retryCount > 0 && nextId === null)) return previousRagChunks;
 
-        const { posts, nextRagChunkId } = await ragChunkService.topKPostsByQuery(userQuery, options);
+        const {ragChunks, nextId: nextRagChunkId} = await ragChunkService.topKRagChunksByQuery(userQuery, nextId);
 
         const prompt = `
             User Query: "${userQuery}"
-            Return ONLY a JSON array of indices for relevant posts.
-            Posts:
-            ${posts.map((post, i) => `[Index: ${i}] The post description: ${post.description}`).join("\n")}
+            Return ONLY a JSON array of indices for relevant post chunks.
+            Post chunks:
+            ${ragChunks.map((chunk, i) => `[Index: ${i}] The chunk description: ${chunk.text}`).join("\n")}
         `;
 
         try {
-            const indices = await this.callGemini(prompt);
-
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(previousRelevantPosts, posts, indices));
-
-            if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
-
-            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, {
-                retryCount: options.retryCount + 1,
-                nextId: nextRagChunkId
-            });
+            return await this.getRelevantRagChunksFromProvider(
+                previousRagChunks,
+                ragChunks,
+                nextRagChunkId,
+                retryCount,
+                userQuery,
+                prompt,
+                this.callGemini
+            )
         } catch (error) {
             console.warn("Gemini failed. Switching to Local Model (LM Studio)...", error);
         }
 
         try {
-            const indices = await this.callLMStudio(prompt);
-            previousRelevantPosts = previousRelevantPosts.concat(this.filterPostsByRelevantPostIndices(previousRelevantPosts, posts, indices));
-
-            if (previousRelevantPosts.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRelevantPosts;
-
-            return this.getRelevantPostsWithIterations(previousRelevantPosts, userQuery, {
-                nextId: nextRagChunkId,
-                retryCount: options.retryCount + 1
-            });
+            return await this.getRelevantRagChunksFromProvider(
+                previousRagChunks,
+                ragChunks,
+                nextRagChunkId,
+                retryCount,
+                userQuery,
+                prompt,
+                this.callLMStudio
+            )
         } catch (error) {
-            if (previousRelevantPosts.length > 0) {
+            if (previousRagChunks.length > 0) {
                 console.error("All LLM providers failed. Returning relevant posts", error);
 
-                return previousRelevantPosts;
+                return previousRagChunks;
             }
 
             console.error("All LLM providers failed. Returning original results as fallback. ", error);
 
-            return posts;
+            return ragChunks;
         }
     }
 
-    private filterPostsByRelevantPostIndices(previousPosts: RawPost[], posts: RawPost[], indices: number[]): RawPost[] {
+    private getRelevantRagChunksFromProvider = async (previousRagChunks: RawRagChunk[], ragChunks: RawRagChunk[], nextRagChunkId: mongoose.Types.ObjectId | null, retryCount: number, userQuery: string, prompt: string, callProvider: (prompt: string) => Promise<number[]>) => {
+        const indices = await callProvider(prompt);
+        previousRagChunks = previousRagChunks.concat(this.filterRagChunksByRelevantIndices(ragChunks, indices));
+
+        if (previousRagChunks.length >= envVar.MINIMUM_RELEVANT_POSTS) return previousRagChunks;
+
+        return this.getRelevantRagChunksWithIterations(previousRagChunks, userQuery, nextRagChunkId, retryCount + 1);
+    }
+
+    private filterRagChunksByRelevantIndices = (ragChunks: RawRagChunk[], indices: number[]): RawRagChunk[] => {
         if (!Array.isArray(indices)) {
             console.error("The result from the LLM provider is not an array")
-            return posts;
+            return ragChunks;
         }
 
-        const filteredPosts: RawPost[] = []
+        return indices.reduce<RawRagChunk[]>((filteredRagChunks, index) => {
+            if (ragChunks[index]) filteredRagChunks.push(ragChunks[index]);
 
-        indices.forEach(index => {
-            if (posts[index] && !previousPosts.includes(posts[index])) filteredPosts.push(posts[index])
-        })
-
-        return filteredPosts;
+            return filteredRagChunks;
+        }, []);
     }
 
-    private async callGemini(prompt: string): Promise<number[]> {
-        const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    private callGemini = async (prompt: string): Promise<number[]> => {
+        const model = this.genAI.getGenerativeModel({model: "gemini-2.5-flash"});
         const result = await model.generateContent(prompt);
         const text = result.response.text();
         const cleanedJson = text.replace(/```json|```/g, "").trim();
         return JSON.parse(cleanedJson);
     }
 
-    private async callLMStudio(prompt: string): Promise<number[]> {
+    private callLMStudio = async (prompt: string): Promise<number[]> => {
         const response = await fetch(`${envVar.LM_STUDIO_URL}/v1/chat/completions`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 model: "local-model",
-                messages: [{ role: "user", content: prompt }],
+                messages: [{role: "user", content: prompt}],
                 temperature: 0,
             }),
         });
