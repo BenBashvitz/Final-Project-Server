@@ -1,4 +1,3 @@
-import {RawPost} from "../types/post";
 import envVar from "../configs/envVar";
 import {GoogleGenerativeAI} from '@google/generative-ai'
 import ragChunkService from "./ragChunkService";

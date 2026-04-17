@@ -260,7 +260,6 @@ class PostController extends BaseController<RawPost> {
                         _id: { $in: relevantPostIds },
                     },
                 },
-                { $sort: { __order: 1 } },
                 ...this.getEnrichmentPipeline(currentUserId),
             ]);
 
