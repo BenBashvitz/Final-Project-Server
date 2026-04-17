@@ -78,7 +78,7 @@ class RagChunkService {
 
     private generateEmbedding = async (data: string): Promise<number[]> => {
         if (!this.textEmbedder) {
-            this.textEmbedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+            this.textEmbedder = await pipeline('feature-extraction');
         }
 
         const output = await this.textEmbedder(data, {
