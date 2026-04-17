@@ -4,18 +4,15 @@ import {GoogleGenerativeAI} from '@google/generative-ai'
 import ragChunkService from "./ragChunkService";
 import mongoose from "mongoose";
 import {RawRagChunk} from "../types/ragChunks";
-import postModel from "../models/postModel";
 
 class AiService {
     private genAI: GoogleGenerativeAI = new GoogleGenerativeAI(envVar.GEMINI_API_KEY);
     private maxNumberOfRetries = envVar.RAG_MAX_NUMBER_OR_RETRIES;
 
-    getRelevantPosts = async (userQuery: string): Promise<RawPost[]> => {
+    getRelevantPostsIds = async (userQuery: string): Promise<mongoose.Types.ObjectId[]> => {
         const relevantRagChunks = await this.getRelevantRagChunksWithIterations([], userQuery, null, 0,);
 
-        return postModel.find({
-            _id: {$in: relevantRagChunks.map(({postId}) => postId)}
-        })
+        return relevantRagChunks.map(({postId}) => postId)
     }
 
     private getRelevantRagChunksWithIterations = async (previousRagChunks: RawRagChunk[], userQuery: string, nextId: mongoose.Types.ObjectId | null, retryCount = 3): Promise<RawRagChunk[]> => {

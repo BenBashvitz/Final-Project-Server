@@ -65,10 +65,10 @@ describe("AiService", () => {
                 },
             });
 
-            const result = await aiService.getRelevantPosts("Give me cat posts");
+            const result = await aiService.getRelevantPostsIds("Give me cat posts");
 
             expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(mockPost);
+            expect(result[0]).toEqual(mockPost._id);
             expect(ragChunkService.topKRagChunksByQuery).toHaveBeenCalledWith("Give me cat posts", null);
             expect(mockGenerateContent).toHaveBeenCalled();
         });
@@ -84,10 +84,10 @@ describe("AiService", () => {
                 })
             });
 
-            const result = await aiService.getRelevantPosts("Cat query");
+            const result = await aiService.getRelevantPostsIds("Cat query");
 
             expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(mockPost);
+            expect(result[0]).toEqual(mockPost._id);
             expect(global.fetch).toHaveBeenCalled();
         });
 
@@ -97,9 +97,9 @@ describe("AiService", () => {
             mockGenerateContent.mockRejectedValue(new Error("Gemini Error"));
             (global.fetch as jest.Mock).mockRejectedValue(new Error("LM Studio Error"));
 
-            const result = await aiService.getRelevantPosts("Cat query");
+            const result = await aiService.getRelevantPostsIds("Cat query");
 
-            expect(result).toEqual(mockTopKPosts);
+            expect(result).toEqual([mockPost._id]);
         });
 
         it("should iterate if minimum relevant posts count is not reached", async () => {
@@ -115,7 +115,7 @@ describe("AiService", () => {
                     response: { text: () => "[0]" }
                 });
 
-            const result = await aiService.getRelevantPosts("Cat query");
+            const result = await aiService.getRelevantPostsIds("Cat query");
 
             expect(result).toHaveLength(1);
             expect(mockGenerateContent).toHaveBeenCalledTimes(2);
@@ -126,16 +126,17 @@ describe("AiService", () => {
             mockGenerateContent.mockResolvedValue({
                 response: { text: () => "Not a JSON" }
             });
-
+            
             (global.fetch as jest.Mock).mockResolvedValue({
                 json: jest.fn().mockResolvedValue({
                     choices: [{ message: { content: "[0]" } }]
                 })
             });
 
-            const result = await aiService.getRelevantPosts("query");
+            const result = await aiService.getRelevantPostsIds("query");
 
             expect(result).toHaveLength(1);
+            expect(global.fetch).toHaveBeenCalled();
         });
     });
 });

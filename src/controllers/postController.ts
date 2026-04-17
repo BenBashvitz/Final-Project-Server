@@ -252,18 +252,12 @@ class PostController extends BaseController<RawPost> {
             const { query } = GetRelevantPostsByQuerySchema.parse(req.query);
             const currentUserId = new mongoose.Types.ObjectId(req.user?._id);
 
-            const relevantRawPosts = await aiService.getRelevantPosts(query);
-            const postIds = relevantRawPosts.map(post => post._id);
+            const relevantPostIds = await aiService.getRelevantPostsIds(query);
 
             const enrichedPosts = await this.model.aggregate<Post>([
                 {
                     $match: {
-                        _id: { $in: postIds },
-                    },
-                },
-                {
-                    $addFields: {
-                        __order: { $indexOfArray: [postIds, "$_id"] },
+                        _id: { $in: relevantPostIds },
                     },
                 },
                 { $sort: { __order: 1 } },

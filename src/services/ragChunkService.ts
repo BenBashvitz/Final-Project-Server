@@ -48,7 +48,7 @@ class RagChunkService {
         const ragChunks = await ragChunksModel.aggregate<RawRagChunk>([{
             $match: {
                 ...(nextId !== null && {
-                    _id: { $lte: nextId },
+                    _id: { $lt: nextId },
                 })
             },
         },
@@ -57,7 +57,7 @@ class RagChunkService {
 
         const hasNextPage = ragChunks.length > envVar.RAG_NUM_OF_CANDIDATES
 
-        if(ragChunks.length > envVar.RAG_NUM_OF_CANDIDATES) {
+        if(hasNextPage) {
             ragChunks.pop()
         }
 
