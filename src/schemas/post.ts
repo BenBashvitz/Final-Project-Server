@@ -38,3 +38,7 @@ export const PostInputSchema = z.object({
   ...UpdatePostBodySchema.shape,
   creationDate: CreationDateSchema,
 });
+
+export const GetRelevantPostsByQuerySchema = z.object({
+  query: z.string()
+})

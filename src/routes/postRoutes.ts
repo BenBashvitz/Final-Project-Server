@@ -277,6 +277,57 @@ router.delete(
   postController.delete.bind(postController),
 );
 
+
+/**
+ * @swagger
+ * /post/search:
+ *   get:
+ *     summary: Get posts by user query
+ *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user query
+ *     responses:
+ *       200:
+ *         description: Relevant posts to the user query
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       400:
+ *        description: Bad request, invalid query format
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ZodTreeError'
+ *            example:
+ *              errors: []
+ *              properties:
+ *                query:
+ *                  errors: ["Invalid input. expected string, received undefined"]
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/search", authMiddleware, postController.getRelevantPosts.bind(postController));
+
 router.use("/:postId/like", likeRouter);
 
 router.use("/:postId/comment", commentRouter);
