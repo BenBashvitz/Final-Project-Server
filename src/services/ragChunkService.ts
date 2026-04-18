@@ -64,7 +64,7 @@ class RagChunkService {
         const scoredRagChunks = ragChunks.map(ragChunk => ({
             ...ragChunk,
             score: score(ragChunk.embedding, queryEmbedding) ?? -1,
-        })).filter(({ score }) => score > envVar.RAG_THRESHOLD);
+        })).filter(({ score, text }) => score > envVar.RAG_THRESHOLD);
 
         return {
             ragChunks: scoredRagChunks.sort((a, b) => b.score - a.score),
@@ -78,7 +78,7 @@ class RagChunkService {
 
     private generateEmbedding = async (data: string): Promise<number[]> => {
         if (!this.textEmbedder) {
-            this.textEmbedder = await pipeline('feature-extraction');
+            this.textEmbedder = await pipeline('feature-extraction', "Xenova/bge-small-en-v1.5");
         }
 
         const output = await this.textEmbedder(data, {
