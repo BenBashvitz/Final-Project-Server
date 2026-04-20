@@ -1,8 +1,12 @@
 import mongoose from "mongoose";
 import ragChunksModel from "../models/ragChunksModel";
+import postModel from "../models/postModel";
 import ragChunkService from "../services/ragChunkService";
-import { PostRagData } from "../types/post";
+import { PostRagData, RawPost } from "../types/post";
 import initApp from "../index";
+import envVar from "../configs/envVar";
+import { setupMultipleUsersForTests, setupSameUserPosts } from "./utils";
+import { Tokens } from "../types/token";
 
 jest.mock("@xenova/transformers", () => ({
     pipeline: jest.fn().mockResolvedValue(
@@ -15,12 +19,18 @@ jest.mock("@xenova/transformers", () => ({
 }));
 
 describe("RagChunkService", () => {
+    let userIds: string[];
+    let userTokens: Tokens[];
     beforeAll(async () => {
-        await initApp();
+        const app = await initApp();
+        const userData = await setupMultipleUsersForTests(app);
+        userIds = userData.userIds;
+        userTokens = userData.userTokens;
     });
 
     beforeEach(async () => {
         await ragChunksModel.deleteMany({});
+        await postModel.deleteMany({});
     });
 
     const mockPostId = new mongoose.Types.ObjectId();
@@ -73,6 +83,63 @@ describe("RagChunkService", () => {
             expect(savedChunks.length).toBeGreaterThan(0);
             expect(savedChunks[0].text).not.toBe("old chunk");
             expect(savedChunks[0].embedding).toEqual(expect.arrayContaining([0.1, 0.2, 0.3, 0.4, 0.5]));
+        });
+    });
+
+    describe("topKRagChunksByQuery", () => {
+        let posts: RawPost[]
+
+        beforeEach(async () => {
+            posts = await setupSameUserPosts(userIds[0])
+        })
+
+        it("should retrieve top K relevant rag chunks based on the query", async () => {
+            await ragChunksModel.create({
+                postId: posts[0]._id,
+                embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+                chunkIndex: 0,
+                text: "Post 1 chunk",
+            });
+
+            await ragChunksModel.create({
+                postId: posts[1]._id,
+                embedding: [-0.1, -0.2, -0.3, -0.4, -0.5],
+                chunkIndex: 0,
+                text: "Post 2 chunk",
+            });
+
+            const { ragChunks: topChunks } = await ragChunkService.topKRagChunksByQuery("test query", null);
+
+            expect(topChunks.length).toBe(1);
+            expect(topChunks[0].postId.toString()).toBe(posts[0]._id.toString());
+        });
+
+        it("should limit results to RAG_TOP_K chunks", async () => {
+            await ragChunksModel.create({
+                postId: posts[0]._id,
+                embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+                chunkIndex: 0,
+                text: "Post 0 chunk 1",
+            });
+            await ragChunksModel.create({
+                postId: posts[0]._id,
+                embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+                chunkIndex: 1,
+                text: "Post 0 chunk 2",
+            });
+
+            for (let i = 1; i <= 6; i++) {
+                await ragChunksModel.create({
+                    postId: posts[i]._id,
+                    embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+                    chunkIndex: 0,
+                    text: `Post ${i} chunk`,
+                });
+            }
+
+            const { ragChunks: topChunks } = await ragChunkService.topKRagChunksByQuery("test query", null);
+
+            expect(topChunks.length).toBe(envVar.RAG_TOP_K);
         });
     });
 

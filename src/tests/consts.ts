@@ -48,6 +48,21 @@ export const POSTS: PostInput[] = [
     imgUrl: "https://example.com/image4.jpg",
     creationDate: new Date(currentTime - 3 * DAY_MS).toISOString(),
   },
+  {
+    description: "Another Description5",
+    imgUrl: "https://example.com/image5.jpg",
+    creationDate: new Date(currentTime - 4 * DAY_MS).toISOString(),
+  },
+  {
+    description: "Another Description6",
+    imgUrl: "https://example.com/image6.jpg",
+    creationDate: new Date(currentTime - 5 * DAY_MS).toISOString(),
+  },
+  {
+    description: "Another Description7",
+    imgUrl: "https://example.com/image7.jpg",
+    creationDate: new Date(currentTime - 6 * DAY_MS).toISOString(),
+  },
 ];
 
 export const COMMENTS: CommentInput[] = [

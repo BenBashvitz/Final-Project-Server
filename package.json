@@ -15,7 +15,9 @@
     "test-like": "jest --detectOpenHandles --runInBand src/tests/like.test.ts",
     "test-comment": "jest --detectOpenHandles --runInBand src/tests/comment.test.ts",
     "test-auth": "jest --detectOpenHandles --runInBand src/tests/auth.test.ts",
-    "test-user": "jest --detectOpenHandles --runInBand src/tests/user.test.ts"
+    "test-user": "jest --detectOpenHandles --runInBand src/tests/user.test.ts",
+    "test-rag": "jest --detectOpenHandles --runInBand src/tests/ragChunk.test.ts",
+    "test-ai": "jest --detectOpenHandles --runInBand src/tests/ai.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -1,8 +1,10 @@
-import { PostRagData } from "../types/post";
+import {PostRagData} from "../types/post";
 import envVar from "../configs/envVar";
-import { FeatureExtractionPipeline, pipeline } from "@xenova/transformers";
+import {FeatureExtractionPipeline, pipeline} from "@xenova/transformers";
 import ragChunksModel from "../models/ragChunksModel";
 import mongoose from "mongoose";
+import {RagChunkPage, RawRagChunk} from "../types/ragChunks";
+import score from 'compute-cosine-similarity';
 
 class RagChunkService {
     private textEmbedder: FeatureExtractionPipeline | null = null;
@@ -30,13 +32,53 @@ class RagChunkService {
         return await this.saveRagChunksForPost(post);
     }
 
+    topKRagChunksByQuery = async (query: string, nextId: mongoose.Types.ObjectId | null): Promise<RagChunkPage> => {
+        const scoredRagChunksPage = await this.scoredAndSortedRagChunksByQuery(query, nextId);
+
+        const topKRagChunks = scoredRagChunksPage.ragChunks.slice(0, envVar.RAG_TOP_K);
+
+        return {
+            ...scoredRagChunksPage,
+            ragChunks: topKRagChunks,
+        }
+    }
+
+    private scoredAndSortedRagChunksByQuery = async (query: string, nextId: mongoose.Types.ObjectId | null): Promise<RagChunkPage> => {
+        const queryEmbedding = await this.generateEmbedding(query);
+        const ragChunks = await ragChunksModel.aggregate<RawRagChunk>([{
+            $match: {
+                ...(nextId !== null && {
+                    _id: { $lt: nextId },
+                })
+            },
+        },
+        { $sort: { _id: -1 } },
+        { $limit: envVar.RAG_NUM_OF_CANDIDATES + 1 }]);
+
+        const hasNextPage = ragChunks.length > envVar.RAG_NUM_OF_CANDIDATES
+
+        if(hasNextPage) {
+            ragChunks.pop()
+        }
+
+        const scoredRagChunks = ragChunks.map(ragChunk => ({
+            ...ragChunk,
+            score: score(ragChunk.embedding, queryEmbedding) ?? -1,
+        })).filter(({ score }) => score > envVar.RAG_THRESHOLD);
+
+        return {
+            ragChunks: scoredRagChunks.sort((a, b) => b.score - a.score),
+            nextId: hasNextPage ? ragChunks[ragChunks.length - 1]._id : null
+        };
+    }
+
     private generateEmbeddings = (chunks: string[]): Promise<number[][]> => {
         return Promise.all(chunks.map(chunk => this.generateEmbedding(chunk)))
     }
 
     private generateEmbedding = async (data: string): Promise<number[]> => {
         if (!this.textEmbedder) {
-            this.textEmbedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+            this.textEmbedder = await pipeline('feature-extraction', "Xenova/bge-small-en-v1.5");
         }
 
         const output = await this.textEmbedder(data, {
