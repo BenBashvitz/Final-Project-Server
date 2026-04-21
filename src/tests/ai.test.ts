@@ -73,29 +73,10 @@ describe("AiService", () => {
             expect(mockGenerateContent).toHaveBeenCalled();
         });
 
-        it("should fallback to LM Studio if Gemini fails", async () => {
+        it("should fallback to original topK chunks and then return posts if Gemini fails", async () => {
             (ragChunkService.topKRagChunksByQuery as jest.Mock).mockResolvedValue(mockTopKRagChunks);
 
             mockGenerateContent.mockRejectedValue(new Error("Gemini Error"));
-
-            (global.fetch as jest.Mock).mockResolvedValue({
-                json: jest.fn().mockResolvedValue({
-                    choices: [{ message: { content: "```json [0] ```" } }]
-                })
-            });
-
-            const result = await aiService.getRelevantPostsIds("Cat query");
-
-            expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(mockPost._id);
-            expect(global.fetch).toHaveBeenCalled();
-        });
-
-        it("should fallback to original topK chunks and then return posts if both LLMs fail", async () => {
-            (ragChunkService.topKRagChunksByQuery as jest.Mock).mockResolvedValue(mockTopKRagChunks);
-
-            mockGenerateContent.mockRejectedValue(new Error("Gemini Error"));
-            (global.fetch as jest.Mock).mockRejectedValue(new Error("LM Studio Error"));
 
             const result = await aiService.getRelevantPostsIds("Cat query");
 
@@ -121,22 +102,15 @@ describe("AiService", () => {
             expect(mockGenerateContent).toHaveBeenCalledTimes(2);
         });
 
-        it("should handle invalid JSON from Gemini by falling back to Local Model", async () => {
+        it("should fallback to original topK chunks if Gemini returns invalid JSON", async () => {
             (ragChunkService.topKRagChunksByQuery as jest.Mock).mockResolvedValue(mockTopKRagChunks);
             mockGenerateContent.mockResolvedValue({
                 response: { text: () => "Not a JSON" }
             });
             
-            (global.fetch as jest.Mock).mockResolvedValue({
-                json: jest.fn().mockResolvedValue({
-                    choices: [{ message: { content: "[0]" } }]
-                })
-            });
-
             const result = await aiService.getRelevantPostsIds("query");
 
-            expect(result).toHaveLength(1);
-            expect(global.fetch).toHaveBeenCalled();
+            expect(result).toEqual([mockPost._id]);
         });
     });
 });
