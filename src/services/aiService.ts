@@ -37,27 +37,13 @@ class AiService {
                 this.callGemini
             )
         } catch (error) {
-            console.warn("Gemini failed. Switching to Local Model (LM Studio)...", error);
-        }
-
-        try {
-            return await this.getRelevantRagChunksFromProvider(
-                previousRagChunks,
-                ragChunks,
-                nextRagChunkId,
-                retryCount,
-                userQuery,
-                prompt,
-                this.callLMStudio
-            )
-        } catch (error) {
             if (previousRagChunks.length > 0) {
-                console.error("All LLM providers failed. Returning relevant posts", error);
+                console.error("Gemini failed. Returning relevant posts", error);
 
                 return previousRagChunks;
             }
 
-            console.error("All LLM providers failed. Returning original results as fallback. ", error);
+            console.error("Gemini failed. Returning original results as fallback. ", error);
 
             return ragChunks;
         }
@@ -93,21 +79,6 @@ class AiService {
         return JSON.parse(cleanedJson);
     }
 
-    private callLMStudio = async (prompt: string): Promise<number[]> => {
-        const response = await fetch(`${envVar.LM_STUDIO_URL}/v1/chat/completions`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                model: "local-model",
-                messages: [{role: "user", content: prompt}],
-                temperature: 0,
-            }),
-        });
-        const data = await response.json();
-        const text = data.choices[0].message.content;
-        const cleanedJson = text.replace(/```json|```/g, "").trim();
-        return JSON.parse(cleanedJson);
-    }
 }
 
 export default new AiService();

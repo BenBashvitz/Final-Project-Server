@@ -51,7 +51,6 @@ const config = z
             .string()
             .regex(/^\d+$/)
             .transform(Number),
-        LM_STUDIO_URL: z.string(),
         GEMINI_API_KEY: z.string(),
     })
     .parse(process.env);
