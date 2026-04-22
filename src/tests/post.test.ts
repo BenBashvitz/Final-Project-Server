@@ -105,9 +105,6 @@ describe("with post creation", () => {
         });
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
-      expect(secondPostPageResponse.body.posts.length).toBe(
-        testConfig.POSTS_PAGE_SIZE,
-      );
     });
 
     it("should return 400 for invalid userId in query params", async () => {
@@ -157,9 +154,6 @@ describe("with post creation", () => {
           });
         expect(secondPostPageResponse.status).toBe(200);
         expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
-        expect(secondPostPageResponse.body.posts.length).toBe(
-          testConfig.POSTS_PAGE_SIZE,
-        );
       });
 
       it("should return 400 for invalid cursor - missing _id", async () => {

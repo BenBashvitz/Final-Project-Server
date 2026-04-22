@@ -29,7 +29,7 @@ export const setupMultipleUsersForTests = async (
 export const setupDifferentUsersPosts = async (userIds: string[]) => {
   const postsToInsert: PostInputWithUserId[] = POSTS.map((post, index) => ({
     ...post,
-    userId: userIds[index],
+    userId: userIds[index % (userIds.length - 1)],
   }));
 
   const createdPosts = await postModel.create(postsToInsert);
