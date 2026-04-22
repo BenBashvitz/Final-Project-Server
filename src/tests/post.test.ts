@@ -9,6 +9,7 @@ import { removeFile } from "../utils/removeLocalFile";
 import testConfig from "./config";
 import { POSTS } from "./consts";
 import type { PostInput, TestPostPage } from "./types";
+import aiService from "../services/aiService";
 import {
   getCookieSetters,
   setupSameUserPosts,
@@ -19,6 +20,8 @@ import {
 jest.mock("../utils/removeLocalFile", () => ({
   removeFile: jest.fn().mockResolvedValue(undefined),
 }));
+
+jest.mock("../services/aiService");
 
 let app: Express;
 let userTokens: Tokens[] = [];
@@ -36,6 +39,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await postModel.deleteMany();
+  jest.clearAllMocks();
 });
 
 describe("Create post", () => {
@@ -183,6 +187,51 @@ describe("with post creation", () => {
               cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
             });
         expect(response.status).toBe(400);
+      });
+    });
+
+    describe("Search posts", () => {
+      it("should return relevant posts based on search query with correct enrichment", async () => {
+        const mockRelevantIds = [new mongoose.Types.ObjectId(postId)];
+        (aiService.getRelevantPostsIds as jest.Mock).mockResolvedValue(mockRelevantIds);
+
+        const response = await request(app)
+            .get("/post/search")
+            .query({ query: "cat" })
+            .set("Cookie", getCookieSetters(userTokens[0]));
+
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBe(1);
+
+        const post = response.body[0];
+        expect(post._id).toBe(postId);
+
+        expect(post).toHaveProperty("user");
+        expect(post).toHaveProperty("isLikedByCurrentUser");
+        expect(post).toHaveProperty("likeCount");
+        expect(post).toHaveProperty("commentCount");
+
+        expect(aiService.getRelevantPostsIds).toHaveBeenCalledWith("cat");
+      });
+
+      it("should return 400 when search query is missing", async () => {
+        const response = await request(app)
+            .get("/post/search")
+            .set("Cookie", getCookieSetters(userTokens[0]));
+
+        expect(response.status).toBe(400);
+      });
+
+      it("should return 500 when aiService fails", async () => {
+        (aiService.getRelevantPostsIds as jest.Mock).mockRejectedValue(new Error("AI Error"));
+
+        const response = await request(app)
+            .get("/post/search")
+            .query({ query: "cat" })
+            .set("Cookie", getCookieSetters(userTokens[0]));
+
+        expect(response.status).toBe(500);
       });
     });
 
