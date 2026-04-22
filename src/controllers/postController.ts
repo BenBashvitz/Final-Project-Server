@@ -247,6 +247,23 @@ class PostController extends BaseController<RawPost> {
         }
     }
 
+    async getNumberOfPostsByUser(req: AuthRequest, res: Response) {
+        try {
+            const userId = req.user?._id;
+
+            if (!userId) {
+                return res.status(401).send("Unauthorized");
+            }
+
+            const count = await this.model.countDocuments({ userId: userId });
+
+            res.status(200).json({ count });
+        } catch (error) {
+            console.error(`An error occurred while counting posts for user`, error);
+            res.status(500).send(`An error occurred while counting posts`);
+        }
+    }
+
     async getRelevantPosts(req: AuthRequest, res: Response) {
         try {
             const { query } = GetRelevantPostsByQuerySchema.parse(req.query);

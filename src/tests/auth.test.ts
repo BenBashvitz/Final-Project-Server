@@ -201,6 +201,11 @@ describe("Operations with accesses token", () => {
 
       expect(response.statusCode).toBe(401);
     }, 10000);
+
+    it("should fail to fetch number of posts by user with invalid token", async () => {
+      const response = await request(app).get("/post/count");
+      expect(response.status).toBe(401);
+    });
   });
 
   describe("Comment", () => {

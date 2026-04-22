@@ -277,6 +277,31 @@ router.delete(
   postController.delete.bind(postController),
 );
 
+/**
+ * @swagger
+ * /post/count:
+ *   get:
+ *     summary: Get total number of posts by the authenticated user
+ *     tags: [Posts]
+ *     security:
+ *       - accessToken: []
+ *     responses:
+ *       200:
+ *         description: Number of posts for the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: number
+ *                   example: 5
+ *       401:
+ *         description: Unauthorized - Authentication required
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/count", authMiddleware, postController.getNumberOfPostsByUser.bind(postController));
 
 /**
  * @swagger

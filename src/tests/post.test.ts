@@ -42,9 +42,9 @@ describe("Create post", () => {
   test("should create posts", async () => {
     for (const post of POSTS) {
       const response = await request(app)
-        .post("/post")
-        .set("Cookie", getCookieSetters(userTokens[0]))
-        .send(post);
+          .post("/post")
+          .set("Cookie", getCookieSetters(userTokens[0]))
+          .send(post);
 
       expect(response.statusCode).toBe(201);
       expect(response.body).toMatchObject(post);
@@ -57,9 +57,9 @@ describe("Create post", () => {
     };
 
     const response = await request(app)
-      .post("/post")
-      .send(incompletePost)
-      .set("Cookie", getCookieSetters(userTokens[0]));
+        .post("/post")
+        .send(incompletePost)
+        .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.status).toBe(400);
   });
@@ -80,11 +80,11 @@ describe("with post creation", () => {
       };
 
       const firstPostPageResponse = await request(app)
-        .get("/post")
-        .query({
-          userId: userIds[0],
-        })
-        .set("Cookie", getCookieSetters(userTokens[0]));
+          .get("/post")
+          .query({
+            userId: userIds[0],
+          })
+          .set("Cookie", getCookieSetters(userTokens[0]));
       const responseBody: TestPostPage = firstPostPageResponse.body;
 
       expect(firstPostPageResponse.status).toBe(200);
@@ -97,22 +97,33 @@ describe("with post creation", () => {
       };
 
       const secondPostPageResponse = await request(app)
-        .get(`/post`)
-        .set("Cookie", getCookieSetters(userTokens[0]))
-        .query({
-          cursor: JSON.stringify(responseBody.cursor),
-          userId: userIds[0],
-        });
+          .get(`/post`)
+          .set("Cookie", getCookieSetters(userTokens[0]))
+          .query({
+            cursor: JSON.stringify(responseBody.cursor),
+            userId: userIds[0],
+          });
       expect(secondPostPageResponse.status).toBe(200);
       expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
     });
 
     it("should return 400 for invalid userId in query params", async () => {
       const response = await request(app)
-        .get("/post")
-        .set("Cookie", getCookieSetters(userTokens[0]))
-        .query({ userId: "invalid-user-id" });
+          .get("/post")
+          .set("Cookie", getCookieSetters(userTokens[0]))
+          .query({ userId: "invalid-user-id" });
       expect(response.status).toBe(400);
+    });
+
+    describe("Count posts", () => {
+      it("should get the correct number of posts for the authenticated user", async () => {
+        const response = await request(app)
+            .get("/post/count")
+            .set("Cookie", getCookieSetters(userTokens[0]));
+
+        expect(response.status).toBe(200);
+        expect(response.body.count).toBe(POSTS.length);
+      });
     });
   });
 
@@ -133,8 +144,8 @@ describe("with post creation", () => {
         };
 
         const firstPostPageResponse = await request(app)
-          .get("/post")
-          .set("Cookie", getCookieSetters(userTokens[0]));
+            .get("/post")
+            .set("Cookie", getCookieSetters(userTokens[0]));
         const responseBody: TestPostPage = firstPostPageResponse.body;
 
         expect(firstPostPageResponse.status).toBe(200);
@@ -147,30 +158,30 @@ describe("with post creation", () => {
         };
 
         const secondPostPageResponse = await request(app)
-          .get(`/post`)
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .query({
-            cursor: JSON.stringify(responseBody.cursor),
-          });
+            .get(`/post`)
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .query({
+              cursor: JSON.stringify(responseBody.cursor),
+            });
         expect(secondPostPageResponse.status).toBe(200);
         expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
       });
 
       it("should return 400 for invalid cursor - missing _id", async () => {
         const response = await request(app)
-          .get("/post")
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
+            .get("/post")
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .query({ cursor: JSON.stringify({ creationDate: new Date() }) });
         expect(response.status).toBe(400);
       });
 
       it("should return 400 for invalid cursor - missing creationDate", async () => {
         const response = await request(app)
-          .get("/post")
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .query({
-            cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
-          });
+            .get("/post")
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .query({
+              cursor: JSON.stringify({ _id: new mongoose.Types.ObjectId() }),
+            });
         expect(response.status).toBe(400);
       });
     });
@@ -186,9 +197,9 @@ describe("with post creation", () => {
         };
 
         const response = await request(app)
-          .put(`/post/${postId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .send(postUpdate);
+            .put(`/post/${postId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .send(postUpdate);
 
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject(postUpdate);
@@ -197,17 +208,17 @@ describe("with post creation", () => {
       it("should return 404 when trying to edit a non-existing post", async () => {
         const nonExistingPostId = new mongoose.Types.ObjectId();
         const response = await request(app)
-          .put(`/post/${nonExistingPostId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .send(POSTS[0]);
+            .put(`/post/${nonExistingPostId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .send(POSTS[0]);
         expect(response.status).toBe(404);
       });
 
       it("should return 400 when trying to edit a post with invalid input", async () => {
         const response = await request(app)
-          .put(`/post/${postId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]))
-          .send({ imgUrl: "not-a-url" });
+            .put(`/post/${postId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]))
+            .send({ imgUrl: "not-a-url" });
         expect(response.status).toBe(400);
       });
 
@@ -221,9 +232,9 @@ describe("with post creation", () => {
         };
 
         const response = await request(app)
-          .put(`/post/${postId}`)
-          .set("Cookie", getCookieSetters(userTokens[1]))
-          .send(postUpdate);
+            .put(`/post/${postId}`)
+            .set("Cookie", getCookieSetters(userTokens[1]))
+            .send(postUpdate);
 
         expect(response.status).toBe(403);
       });
@@ -232,8 +243,8 @@ describe("with post creation", () => {
     describe("Delete post", () => {
       it("should delete a post", async () => {
         const response = await request(app)
-          .delete(`/post/${postId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]));
+            .delete(`/post/${postId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]));
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({ _id: postId });
         expect(removeFile).toHaveBeenCalledWith(POSTS[0].imgUrl);
@@ -242,8 +253,8 @@ describe("with post creation", () => {
       it("should return 404 when trying to delete a non-existing post", async () => {
         const nonExistingPostId = new mongoose.Types.ObjectId();
         const response = await request(app)
-          .delete(`/post/${nonExistingPostId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]));
+            .delete(`/post/${nonExistingPostId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]));
 
         expect(response.status).toBe(404);
       });
@@ -251,15 +262,15 @@ describe("with post creation", () => {
       it("should return 400 when trying to delete with an invalid post ID", async () => {
         const invalidPostId = "invalid-id";
         const response = await request(app)
-          .delete(`/post/${invalidPostId}`)
-          .set("Cookie", getCookieSetters(userTokens[0]));
+            .delete(`/post/${invalidPostId}`)
+            .set("Cookie", getCookieSetters(userTokens[0]));
         expect(response.status).toBe(400);
       });
 
       it("should return 403 when trying to delete a post by another user", async () => {
         const response = await request(app)
-          .delete(`/post/${postId}`)
-          .set("Cookie", getCookieSetters(userTokens[1]));
+            .delete(`/post/${postId}`)
+            .set("Cookie", getCookieSetters(userTokens[1]));
         expect(response.status).toBe(403);
       });
     });
