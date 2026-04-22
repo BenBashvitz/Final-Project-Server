@@ -25,7 +25,7 @@ beforeAll(async () => {
 
   const postsWithUserId = POSTS.map((post, index) => ({
     ...post,
-    userId: userIds[index],
+    userId: userIds[index % (userIds.length - 1)],
   }));
 
   const posts = await postModel.create(postsWithUserId);
