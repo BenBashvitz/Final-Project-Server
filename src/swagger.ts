@@ -37,12 +37,12 @@ const options: swaggerJsdoc.Options = {
                     properties: {
                         _id: {
                             type: "string",
-                            description: "Post ID",
+                            description: "The user's ID",
                             example: "697cc87180aa7bb6865a259d",
                         },
                         username: {
                             type: "string",
-                            description: "Username",
+                            description: "The user's Username",
                             example: "JustAUser"
                         },
                         email: {
