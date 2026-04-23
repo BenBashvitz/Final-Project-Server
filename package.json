@@ -7,8 +7,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "start": "tsc && node --env-file=.env.dev dist/server.js",
     "build": "tsc -p tsconfig.prod.json",
-    "start": "npm run build && node --env-file=.env.dev dist/server.js",
+    "prod": "npm run build && pm2 restart ecosystem.config.js --env production",
     "dev": "nodemon src/server.ts",
     "test": "jest --detectOpenHandles --runInBand",
     "test-post": "jest --detectOpenHandles --runInBand src/tests/post.test.ts",

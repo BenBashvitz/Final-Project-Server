@@ -13,6 +13,7 @@ import postRouter from "./routes/postRoutes";
 import swaggerSpec from "./swagger";
 import userRoutes from "./routes/userRoutes";
 import path from "path";
+import router from "./routes/routes";
 
 const initApp = async () => {
     const app = express();
@@ -37,18 +38,20 @@ const initApp = async () => {
         console.log("Connected to MongoDB");
     });
 
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    app.use("/post", postRouter);
-    app.use("/like", likeRouter);
-    app.use("/auth", authRouter);
-    app.use("/upload", multerRouter);
-    app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
-    app.use("/auth", authRouter);
-    app.use("/user", userRoutes);
-
     app.use(express.static(path.join(__dirname, '..', 'dist')));
+
+    app.use("/api", router);
+
+    app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
+
+    app.use((req, res, next) => {
+        if (req.url.startsWith('/api/') || req.url.match(/\.[a-zA-Z0-9]+$/)) {
+            return res.status(404).send('Resource not found');
+        }
+        next();
+    });
+
     app.get('/*splat', (req, res) => {
-        console.log(path.join(__dirname, '..', 'dist', 'index.html'));
         res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
     });
 
