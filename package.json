@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.prod.json",
     "start": "npm run build && node --env-file=.env.dev dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest --detectOpenHandles --runInBand",
