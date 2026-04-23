@@ -167,9 +167,13 @@ const refreshToken = async (req: Request, res: Response) => {
             return res.status(401).send(ResponseErrorMessage.INVALID_REFRESH_TOKEN);
         }
 
-        user.refreshTokens = user.refreshTokens.filter(
-            (refreshToken) => refreshToken !== oldRefreshToken,
-        );
+        await userModel.findByIdAndUpdate(user._id, {
+            $set: {
+                refreshTokens: user.refreshTokens.filter(
+                    (refreshToken) => refreshToken !== oldRefreshToken,
+                ),
+            }
+        })
 
         return saveTokensAndSendResponse(user, res, 200);
     } catch (error) {
