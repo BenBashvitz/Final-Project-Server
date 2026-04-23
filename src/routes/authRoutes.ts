@@ -33,6 +33,10 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad request - Invalid input
  *         content:
@@ -85,6 +89,10 @@ router.post("/register", authController.register);
  *     responses:
  *       200:
  *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized - Invalid credentials
  *         content:
@@ -123,6 +131,10 @@ router.post("/login", authController.login);
  *     responses:
  *       200:
  *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized - Invalid refresh token
  *         content:
@@ -185,8 +197,16 @@ router.post("/logout", authMiddleware, authController.logout);
  *     responses:
  *       200:
  *         description: User successfully logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       201:
  *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad request - Invalid input
  *         content:
