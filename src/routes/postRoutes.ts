@@ -287,7 +287,7 @@ router.delete(
  *       - accessToken: []
  *     responses:
  *       200:
- *         description: Number of posts for the user
+ *         description: Total number of posts by the authenticated user
  *         content:
  *           application/json:
  *             schema:

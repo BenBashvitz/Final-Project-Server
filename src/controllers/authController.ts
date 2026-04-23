@@ -59,7 +59,12 @@ const saveTokensAndSendResponse = async (
     const tokens = generateTokens(user._id.toString());
 
     user.refreshTokens.push(tokens.refreshToken);
-    await user.save();
+
+    await userModel.findByIdAndUpdate(user._id, {
+        $push: {
+            refreshTokens: tokens.refreshToken,
+        }
+    })
 
     setTokens(res, tokens);
 
