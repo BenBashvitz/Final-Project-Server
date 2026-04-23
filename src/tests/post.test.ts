@@ -70,58 +70,63 @@ describe("with post creation", () => {
             await setupSameUserPosts(userIds[0]);
         });
 
-        it("should retrieve all pages of posts for a specific user", async () => {
-            const firstPostPage: TestPostPage = {
-                posts: POSTS.slice(0, testConfig.POSTS_PAGE_SIZE),
-                cursor: {
-                    creationDate: POSTS[testConfig.POSTS_PAGE_SIZE - 1].creationDate,
-                },
-            };
+        describe("Get all posts", () => {
 
-            const firstPostPageResponse = await request(app)
-                .get("/post")
-                .query({
-                    userId: userIds[0],
-                })
-                .set("Cookie", getCookieSetters(userTokens[0]));
-            const responseBody: TestPostPage = firstPostPageResponse.body;
+            it("should retrieve all pages of posts for a specific user", async () => {
+                const firstPostPage: TestPostPage = {
+                    posts: POSTS.slice(0, testConfig.POSTS_PAGE_SIZE),
+                    cursor: {
+                        creationDate: POSTS[testConfig.POSTS_PAGE_SIZE - 1].creationDate,
+                    },
+                };
 
-            expect(firstPostPageResponse.status).toBe(200);
-            expect(responseBody).toMatchObject(firstPostPage);
-            expect(responseBody.posts.length).toBe(testConfig.POSTS_PAGE_SIZE);
+                const firstPostPageResponse = await request(app)
+                    .get("/post")
+                    .query({
+                        userId: userIds[0],
+                    })
+                    .set("Cookie", getCookieSetters(userTokens[0]));
+                const responseBody: TestPostPage = firstPostPageResponse.body;
 
-            const secondPostPage: TestPostPage = {
-                posts: POSTS.slice(testConfig.POSTS_PAGE_SIZE),
-                cursor: null,
-            };
+                expect(firstPostPageResponse.status).toBe(200);
+                expect(responseBody).toMatchObject(firstPostPage);
+                expect(responseBody.posts.length).toBe(testConfig.POSTS_PAGE_SIZE);
 
-            const secondPostPageResponse = await request(app)
-                .get(`/post`)
-                .set("Cookie", getCookieSetters(userTokens[0]))
-                .query({
-                    cursor: JSON.stringify(responseBody.cursor),
-                    userId: userIds[0],
-                });
-            expect(secondPostPageResponse.status).toBe(200);
-            expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
-        });
+                const secondPostPage: TestPostPage = {
+                    posts: POSTS.slice(testConfig.POSTS_PAGE_SIZE),
+                    cursor: null,
+                };
 
-        it("should return 400 for invalid userId in query params", async () => {
-            const response = await request(app)
-                .get("/post")
-                .set("Cookie", getCookieSetters(userTokens[0]))
-                .query({userId: "invalid-user-id"});
-            expect(response.status).toBe(400);
-        });
+                const secondPostPageResponse = await request(app)
+                    .get(`/post`)
+                    .set("Cookie", getCookieSetters(userTokens[0]))
+                    .query({
+                        cursor: JSON.stringify(responseBody.cursor),
+                        userId: userIds[0],
+                    });
+                expect(secondPostPageResponse.status).toBe(200);
+                expect(secondPostPageResponse.body).toMatchObject(secondPostPage);
+            });
 
-        it("should get the correct number of posts for the authenticated user", async () => {
-            const response = await request(app)
-                .get("/post/count")
-                .set("Cookie", getCookieSetters(userTokens[0]));
+            it("should return 400 for invalid userId in query params", async () => {
+                const response = await request(app)
+                    .get("/post")
+                    .set("Cookie", getCookieSetters(userTokens[0]))
+                    .query({userId: "invalid-user-id"});
+                expect(response.status).toBe(400);
+            });
+        })
 
-            expect(response.status).toBe(200);
-            expect(response.body.count).toBe(POSTS.length);
-        });
+        describe("Count posts by current user", () => {
+            it("should get the correct number of posts for the authenticated user", async () => {
+                const response = await request(app)
+                    .get("/post/count")
+                    .set("Cookie", getCookieSetters(userTokens[0]));
+
+                expect(response.status).toBe(200);
+                expect(response.body.count).toBe(POSTS.length);
+            });
+        })
     });
 
     describe("With posts created by different users", () => {
