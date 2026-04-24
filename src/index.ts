@@ -33,15 +33,15 @@ const initApp = async () => {
 
     app.use("/api", baseRouter);
 
-    app.use(notFoundMiddleware)
+    app.use(notFoundMiddleware);
 
-    // if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production") {
         app.use(express.static(path.join(process.cwd(), 'public', 'client')));
 
         app.get('/*splat', (req, res) => {
             res.sendFile(path.join(process.cwd(), 'public', 'client', 'index.html'));
         });
-    // }
+    }
 
     return app;
 };
