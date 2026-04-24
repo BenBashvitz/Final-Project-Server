@@ -15,7 +15,7 @@ router.use("/post", postRouter);
 router.use("/like", likeRouter);
 router.use("/auth", authRouter);
 router.use("/upload", multerRouter);
-router.use("/auth", authRouter);
+router.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
 router.use("/user", userRoutes);
 
 export default router;

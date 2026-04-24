@@ -3,17 +3,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
-import swaggerUi from "swagger-ui-express";
 import config from "./configs/envVar";
-import {UPLOADS_ROUTE} from "./consts";
-import authRouter from "./routes/authRoutes";
-import likeRouter from "./routes/likeRoutes";
-import multerRouter from "./routes/multerRoutes";
-import postRouter from "./routes/postRoutes";
-import swaggerSpec from "./swagger";
-import userRoutes from "./routes/userRoutes";
 import path from "path";
-import router from "./routes/routes";
+import baseRouter from "./routes/baseRoutes";
 
 const initApp = async () => {
     const app = express();
@@ -38,22 +30,15 @@ const initApp = async () => {
         console.log("Connected to MongoDB");
     });
 
-    app.use(express.static(path.join(__dirname, '..', 'dist')));
+    app.use("/api", baseRouter);
 
-    app.use("/api", router);
+    if (process.env.NODE_ENV === "production") {
+        app.use(express.static(path.join(__dirname, 'client')));
 
-    app.use(`/${UPLOADS_ROUTE}`, express.static("public/uploads"));
-
-    app.use((req, res, next) => {
-        if (req.url.startsWith('/api/') || req.url.match(/\.[a-zA-Z0-9]+$/)) {
-            return res.status(404).send('Resource not found');
-        }
-        next();
-    });
-
-    app.get('/*splat', (req, res) => {
-        res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
-    });
+        app.get('/*splat', (req, res) => {
+            res.sendFile(path.join(__dirname, 'client', 'index.html'));
+        });
+    }
 
     return app;
 };
