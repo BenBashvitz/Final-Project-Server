@@ -12,7 +12,9 @@ export const getImgUrl = (req: FileRequest, res: Response) => {
     return res.status(400).send("No file was sent");
   }
 
-  const base = `${config.SERVER_URL}:${config.PORT}/api/`;
+  const port = process.env.NODE_ENV !== "production" ? `:${config.PORT}` : "";
+
+  const base = `${config.SERVER_URL}${port}/api/`;
 
   const imgUrl = `${base}${UPLOADS_ROUTE}/${req.file.filename}`;
 
