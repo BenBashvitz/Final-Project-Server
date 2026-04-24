@@ -52,7 +52,7 @@ export const getUserToken = async (
   app: Express,
   user: UserInput,
 ): Promise<Tokens> => {
-  const response = await request(app).post("/auth/register").send(user);
+  const response = await request(app).post("/api/auth/register").send(user);
 
   return getTokensFromResponse(response) as Tokens;
 };

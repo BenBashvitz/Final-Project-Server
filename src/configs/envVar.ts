@@ -1,7 +1,11 @@
 import dotenv from "dotenv";
 import z from "zod";
 
-dotenv.config({ path: ".env.dev" });
+if(process.env.NODE_ENV === "production") {
+  dotenv.config({ path: ".env" });
+} else {
+  dotenv.config({ path: ".env.dev" });
+}
 
 const config = z
   .object({

@@ -39,7 +39,7 @@ beforeEach(async () => {
 describe("Create comment", () => {
   it("should create a comment successfully", async () => {
     const response = await request(app)
-      .post(`/post/${postIds[0]}/comment`)
+      .post(`/api/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
       .send(COMMENTS[0]);
 
@@ -59,7 +59,7 @@ describe("Create comment", () => {
     };
 
     const response = await request(app)
-      .post(`/post/${postIds[0]}/comment`)
+      .post(`/api/post/${postIds[0]}/comment`)
       .set("Cookie", getCookieSetters(userTokens[0]))
       .send(commentData);
 
@@ -82,7 +82,7 @@ describe("With comments creation", () => {
 
   describe("Get comments for a post", () => {
     it("should get comments for a specific post", async () => {
-      const response = await request(app).get(`/post/${postIds[0]}/comment`);
+      const response = await request(app).get(`/api/post/${postIds[0]}/comment`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -100,15 +100,14 @@ describe("With comments creation", () => {
 
     it("should return 404 for non-existent post", async () => {
       const nonExistentPostId = new mongoose.Types.ObjectId().toString();
-      const response = await request(app).get(
-        `/post/${nonExistentPostId}/comment`,
+      const response = await request(app).get(`/api/post/${nonExistentPostId}/comment`,
       );
       expect(response.status).toBe(404);
     });
 
     it("should return 400 for invalid post ID", async () => {
       const invalidPostId = "invalid-id";
-      const response = await request(app).get(`/post/${invalidPostId}/comment`);
+      const response = await request(app).get(`/api/post/${invalidPostId}/comment`);
       expect(response.status).toBe(400);
     });
   });

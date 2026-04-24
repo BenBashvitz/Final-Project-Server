@@ -19,7 +19,7 @@ describe("Upload file", () => {
     const filePath = `${__dirname}/${EXAMPLE_FILE_NAME}`;
 
     const response = await request(app)
-      .post("/upload")
+      .post("/api/upload")
       .attach("file", filePath);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("imgUrl");
@@ -32,7 +32,7 @@ describe("Upload file", () => {
   });
 
   it("should return 400 if no file is sent", async () => {
-    const response = await request(app).post("/upload");
+    const response = await request(app).post("/api/upload");
 
     expect(response.statusCode).toBe(400);
   });
@@ -41,7 +41,7 @@ describe("Upload file", () => {
     const filePath = `${__dirname}/${NEW_EXAMPLE_FILE_NAME}`;
 
     const response = await request(app)
-      .put("/upload")
+      .put("/api/upload")
       .attach("file", filePath)
       .field("oldImgUrl", oldImgUrl);
 
@@ -58,7 +58,7 @@ describe("Upload file", () => {
   it("should return a 400 error if oldImgUrl is missing while replacing a file", async () => {
     const filePath = `${__dirname}/${NEW_EXAMPLE_FILE_NAME}`;
 
-    const response = await request(app).put("/upload").attach("file", filePath);
+    const response = await request(app).put("/api/upload").attach("file", filePath);
 
     expect(response.statusCode).toBe(400);
   });

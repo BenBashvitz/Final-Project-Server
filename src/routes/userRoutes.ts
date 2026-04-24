@@ -38,7 +38,17 @@ const router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The ID of the user
+ *                 username:
+ *                   type: string
+ *                   description: The user's username
+ *                 imgUrl:
+ *                   type: string
+ *                   description: URL of the user's profile image
  *       400:
  *         description: Bad request - Invalid user input
  *         content:

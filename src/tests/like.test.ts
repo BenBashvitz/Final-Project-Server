@@ -49,7 +49,7 @@ describe("with post creation", () => {
   describe("Like post", () => {
     it("should like a post", async () => {
       const response = await request(app)
-        .post(`/post/${post._id}/like`)
+        .post(`/api/post/${post._id}/like`)
         .set("Cookie", getCookieSetters(userTokens));
 
       expect(response.status).toBe(200);
@@ -62,7 +62,7 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .post(`/post/invalidPostId/like`)
+        .post(`/api/post/invalidPostId/like`)
         .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(400);
     });
@@ -70,7 +70,7 @@ describe("with post creation", () => {
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .post(`/post/${nonExistingPostId}/like`)
+        .post(`/api/post/${nonExistingPostId}/like`)
         .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(404);
     });
@@ -83,7 +83,7 @@ describe("with post creation", () => {
 
     it("should unlike a post", async () => {
       const response = await request(app)
-        .delete(`/post/${post._id}/like`)
+        .delete(`/api/post/${post._id}/like`)
         .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject<LikeResponse>({
@@ -95,7 +95,7 @@ describe("with post creation", () => {
 
     it("should return 400 for invalid post ID", async () => {
       const response = await request(app)
-        .delete(`/post/invalidPostId/like`)
+        .delete(`/api/post/invalidPostId/like`)
         .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(400);
     });
@@ -103,7 +103,7 @@ describe("with post creation", () => {
     it("should return 404 for non-existing post", async () => {
       const nonExistingPostId = new mongoose.Types.ObjectId();
       const response = await request(app)
-        .delete(`/post/${nonExistingPostId}/like`)
+        .delete(`/api/post/${nonExistingPostId}/like`)
         .set("Cookie", getCookieSetters(userTokens));
       expect(response.status).toBe(404);
     });
