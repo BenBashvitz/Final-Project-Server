@@ -8,7 +8,7 @@ const router = express.Router({
 
 /**
  * @swagger
- * post/{id}/like:
+ * /api/post/{id}/like:
  *   post:
  *     summary: Like a post
  *     tags: [Likes]
@@ -73,7 +73,7 @@ router.post("/", authMiddleware, likeController.like);
 
 /**
  * @swagger
- * post/{id}/like:
+ * /api/post/{id}/like:
  *   delete:
  *     summary: Unlike a post
  *     tags: [Likes]

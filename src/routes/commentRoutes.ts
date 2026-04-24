@@ -8,7 +8,7 @@ const router = express.Router({
 
 /**
  * @swagger
- * /post/{postId}/comment:
+ * /api/post/{postId}/comment:
  *   post:
  *     summary: Create a new comment
  *     tags: [Comments]
@@ -81,7 +81,7 @@ router.post(
 
 /**
  * @swagger
- * /post/{postId}/comment:
+ * /api/post/{postId}/comment:
  *   get:
  *     summary: Get all comments for a specific post
  *     tags: [Comments]
