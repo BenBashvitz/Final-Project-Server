@@ -3,6 +3,7 @@ import config from "./configs/envVar";
 import fs from "fs";
 import https from "https";
 import http from "http";
+import path from "path";
 
 const PORT = config.PORT;
 const HTTPS_PORT = config.HTTPS_PORT;
@@ -14,8 +15,8 @@ initApp().then((app) => {
     });
   } else {
     const httpsOptions = {
-      key: fs.readFileSync(config.HTTPS_KEY_PATH),
-      cert: fs.readFileSync(config.HTTPS_CERT_PATH),
+      key: fs.readFileSync(path.join(process.cwd(), config.HTTPS_KEY_PATH)),
+      cert: fs.readFileSync(path.join(process.cwd(), config.HTTPS_CERT_PATH)),
     };
 
     https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {

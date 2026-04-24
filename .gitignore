@@ -4,3 +4,7 @@ dist
 .env
 .env.dev
 .env.test
+client-key.pem
+client.csr
+client-cert.pem
+public
