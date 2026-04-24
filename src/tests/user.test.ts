@@ -34,7 +34,7 @@ describe("With created user", () => {
                 imgUrl: 'public/uploads/beautiful-view-22.jpg'
             };
             const response = await request(app)
-                .put(`/user/${userIds[0]}`)
+                .put(`/api/user/${userIds[0]}`)
                 .set("Cookie", getCookieSetters(userTokens[0]))
                 .send(updatedData);
 
@@ -45,7 +45,7 @@ describe("With created user", () => {
 
         it("should return 400 when trying to update a user with invalid input", async () => {
             const response = await request(app)
-                .put(`/user/${userIds[0]}`)
+                .put(`/api/user/${userIds[0]}`)
                 .set("Cookie", getCookieSetters(userTokens[0]))
                 .send({});
             expect(response.status).toBe(400);
@@ -57,7 +57,7 @@ describe("With created user", () => {
                 imgUrl: 'public/uploads/beautiful-view-22.jpg'
             };
             const response = await request(app)
-                .put(`/user/${userIds[0]}`)
+                .put(`/api/user/${userIds[0]}`)
                 .set("Cookie", getCookieSetters(userTokens[1]))
                 .send(updatedData);
 
@@ -72,7 +72,7 @@ describe("With created user", () => {
             };
 
             const response = await request(app)
-                .put(`/user/${nonExistentId}`)
+                .put(`/api/user/${nonExistentId}`)
                 .set("Cookie", getCookieSetters(userTokens[0]))
                 .send(updatedData);
 
@@ -89,7 +89,7 @@ describe("With created user", () => {
             };
 
             const response = await request(app)
-                .put(`/user/${userIds[0]}`)
+                .put(`/api/user/${userIds[0]}`)
                 .set("Cookie", getCookieSetters(userTokens[0]))
                 .send(updatedData);
 

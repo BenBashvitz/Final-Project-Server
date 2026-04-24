@@ -25,7 +25,7 @@ beforeAll(async () => {
 
 describe("user registration", () => {
   test("should register user", async () => {
-    const response = await request(app).post("/auth/register").send(USERS[0]);
+    const response = await request(app).post("/api/auth/register").send(USERS[0]);
 
     expect(response.statusCode).toBe(201);
     expect(response.body).toMatchObject({
@@ -39,7 +39,7 @@ describe("user registration", () => {
 
 describe("user login", () => {
   test("should login user", async () => {
-    const response = await request(app).post("/auth/login").send({
+    const response = await request(app).post("/api/auth/login").send({
       username: USERS[0].username,
       password: USERS[0].password,
     });
@@ -66,7 +66,7 @@ describe("Refresh token", () => {
     await new Promise((r) => setTimeout(r, 1000));
 
     const response = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .set("Cookie", [
         `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
       ])
@@ -85,7 +85,7 @@ describe("Refresh token", () => {
     await new Promise((r) => setTimeout(r, 1000));
 
     const refreshTokenResponse = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .set("Cookie", [
         `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
       ])
@@ -98,7 +98,7 @@ describe("Refresh token", () => {
       getTokensFromResponse(refreshTokenResponse).refreshToken;
 
     const secondRefreshTokenResponse = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .set("Cookie", [
         `${refreshTokenCookieName}=${userTokens[0].refreshToken}`,
       ])
@@ -107,7 +107,7 @@ describe("Refresh token", () => {
     expect(secondRefreshTokenResponse.statusCode).toBe(401);
 
     const thirdRefreshTokenResponse = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .set("Cookie", [`${refreshTokenCookieName}=${newRefreshToken}`])
       .send();
 
@@ -125,7 +125,7 @@ describe("User logout", () => {
 
   test("should logout user", async () => {
     const response = await request(app)
-      .post("/auth/logout")
+      .post("/api/auth/logout")
       .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.statusCode).toBe(200);
@@ -134,11 +134,11 @@ describe("User logout", () => {
 
   test("should fail to refresh token after logout", async () => {
     await request(app)
-      .post("/auth/logout")
+      .post("/api/auth/logout")
       .set("Cookie", getCookieSetters(userTokens[0]));
 
     const response = await request(app)
-      .post("/auth/refresh-token")
+      .post("/api/auth/refresh-token")
       .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.statusCode).toBe(401);
@@ -150,7 +150,7 @@ describe("User logout", () => {
       .mockRejectedValueOnce(new Error("Database error"));
 
     const response = await request(app)
-      .post("/auth/logout")
+      .post("/api/auth/logout")
       .set("Cookie", getCookieSetters(userTokens[0]));
 
     expect(response.status).toBe(500);
@@ -169,7 +169,7 @@ describe("Operations with accesses token", () => {
 
   describe("Post", () => {
     test("should fail to create a post without a token", async () => {
-      const response = await request(app).post("/post").send(POSTS[0]);
+      const response = await request(app).post("/api/post").send(POSTS[0]);
 
       expect(response.statusCode).toBe(401);
     });
@@ -178,7 +178,7 @@ describe("Operations with accesses token", () => {
       const invalidToken = userTokens[0].accessToken + "a";
 
       const response = await request(app)
-        .post("/post")
+        .post("/api/post")
         .set(
           "Cookie",
           getCookieSetters({
@@ -195,7 +195,7 @@ describe("Operations with accesses token", () => {
       await new Promise((r) => setTimeout(r, 5000));
 
       const response = await request(app)
-        .post("/post")
+        .post("/api/post")
         .set("Cookie", getCookieSetters(userTokens[0]))
         .send(POSTS[0]);
 
@@ -203,7 +203,7 @@ describe("Operations with accesses token", () => {
     }, 10000);
 
     it("should fail to fetch number of posts by user with invalid token", async () => {
-      const response = await request(app).get("/post/count");
+      const response = await request(app).get("/api/post/count");
       expect(response.status).toBe(401);
     });
   });
@@ -219,7 +219,7 @@ describe("Operations with accesses token", () => {
 
     test("should fail to create a comment without a token", async () => {
       const response = await request(app)
-        .post(`/post/${postId}/comment`)
+        .post(`/api/post/${postId}/comment`)
         .send({
           ...COMMENTS[0],
           postId,
@@ -232,7 +232,7 @@ describe("Operations with accesses token", () => {
       const invalidToken = userTokens[0].accessToken + "a";
 
       const response = await request(app)
-        .post(`/post/${postId}/comment`)
+        .post(`/api/post/${postId}/comment`)
         .set(
           "Cookie",
           getCookieSetters({
@@ -252,7 +252,7 @@ describe("Operations with accesses token", () => {
       await new Promise((r) => setTimeout(r, 5000));
 
       const response = await request(app)
-        .post(`/post/${postId}/comment`)
+        .post(`/api/post/${postId}/comment`)
         .set("Cookie", getCookieSetters(userTokens[0]))
         .send({
           ...COMMENTS[0],
@@ -268,7 +268,7 @@ describe("Operations with accesses token", () => {
       const invalidToken = userTokens[0].accessToken + "a";
 
       const response = await request(app)
-        .put(`/user/${userIds[0]}`)
+        .put(`/api/user/${userIds[0]}`)
         .set(
           "Cookie",
           getCookieSetters({
@@ -288,7 +288,7 @@ describe("Operations with accesses token", () => {
       await new Promise((r) => setTimeout(r, 5000));
 
       const response = await request(app)
-        .put(`/user/${userIds[0]}`)
+        .put(`/api/user/${userIds[0]}`)
         .set(
           "Cookie",
           getCookieSetters({
