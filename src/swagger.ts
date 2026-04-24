@@ -33,7 +33,7 @@ const options: swaggerJsdoc.Options = {
             schemas: {
                 User: {
                     type: "object",
-                    required: ["_id", "username", "email", "imgUrl"],
+                    required: ["_id", "username", "email"],
                     properties: {
                         _id: {
                             type: "string",

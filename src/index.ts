@@ -32,6 +32,13 @@ const initApp = async () => {
 
     app.use("/api", baseRouter);
 
+    app.use((req, res, next) => {
+        if (req.url.startsWith('/api/')) {
+            return res.status(404).send('Resource not found');
+        }
+        next();
+    });
+
     if (process.env.NODE_ENV === "production") {
         app.use(express.static(path.join(__dirname, 'client')));
 
