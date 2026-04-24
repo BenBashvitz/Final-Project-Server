@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import config from "./configs/envVar";
 import path from "path";
 import baseRouter from "./routes/baseRoutes";
+import {notFoundMiddleware} from "./middlewares/notFoundMiddleware";
 
 const initApp = async () => {
     const app = express();
@@ -32,18 +33,13 @@ const initApp = async () => {
 
     app.use("/api", baseRouter);
 
-    app.use((req, res, next) => {
-        if (req.url.startsWith('/api/')) {
-            return res.status(404).send('Resource not found');
-        }
-        next();
-    });
+    app.use(notFoundMiddleware)
 
     if (process.env.NODE_ENV === "production") {
-        app.use(express.static(path.join(__dirname, 'client')));
+        app.use(express.static(path.join(__dirname, 'public')));
 
         app.get('/*splat', (req, res) => {
-            res.sendFile(path.join(__dirname, 'client', 'index.html'));
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
         });
     }
 
